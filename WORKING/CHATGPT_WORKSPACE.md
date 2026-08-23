@@ -37,6 +37,19 @@ Temporary persistent workspace for active RRM work performed through ChatGPT.
   - HAR PDF URL: `https://pages.pagesuite.com/b/9/b92d3c82-c4b2-4e6b-9d1a-8cd7fa264065/page.pdf`.
   - This HAR page 88 artwork replaces the current back-cover artwork in the next build.
 
+## Runnable package QA
+- `RRM_RUNNABLE_1.0.5.zip` was reported as failing to start from PowerShell on Windows.
+- The 1.0.5 ZIP itself passes archive-integrity testing and its page-205 source edit is syntactically well-formed by static inspection, but its Windows launcher was fragile: the launcher was nested under `RRM_RUNNABLE/`, depended on PowerShell resolving `npm`, and did not retain a useful startup diagnostic log.
+- `RRM_RUNNABLE_1.0.6.zip` was prepared as the corrected Windows-launch package.
+  - Adds extraction-root `START_RRM.cmd` and `RUN_RRM.ps1` launchers.
+  - Uses `npm.cmd` explicitly on Windows to avoid npm.ps1 execution-policy conflicts.
+  - Runs PowerShell with `-ExecutionPolicy Bypass` from the CMD launcher.
+  - Writes startup/install/Vite errors to `RRM_RUNNABLE/RRM_START_LOG.txt`.
+  - Retries dependency setup once with `npm install` if `npm ci` fails.
+  - Archive integrity verified with `unzip -t`.
+  - SHA-256: `6d361e3a213705107e2105fd22bbf556fcf3e763f38c479b0d6d1292c7657541`.
+- Full dependency installation/build could not be completed in the current execution environment because `npm ci` timed out; do not mark the build itself as verified until a clean install/build succeeds.
+
 ## Purpose
 This branch is the persistent handoff location when the execution container is temporary or unavailable between turns.
 
