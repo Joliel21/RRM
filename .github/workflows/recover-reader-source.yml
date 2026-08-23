@@ -1,0 +1,104 @@
+name: Recover staged reader source
+
+on:
+  push:
+    branches:
+      - rrm-npm-vite-20260823
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reconstruct staged archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/rrm-recover
+          mkdir -p /tmp/rrm-recover/extracted WORKING/import-audit
+
+          cat .import/part_* > /tmp/rrm-recover/parts.b64
+          base64 -d /tmp/rrm-recover/parts.b64 > /tmp/rrm-recover/parts.xz
+          xz -t /tmp/rrm-recover/parts.xz
+          xz -dc /tmp/rrm-recover/parts.xz > /tmp/rrm-recover/payload
+
+          {
+            echo "Recovered staged source audit"
+            echo "============================"
+            echo
+            echo "part files: $(ls .import/part_* | wc -l)"
+            echo "base64 bytes: $(wc -c < /tmp/rrm-recover/parts.b64)"
+            echo "xz bytes: $(wc -c < /tmp/rrm-recover/parts.xz)"
+            echo "payload bytes: $(wc -c < /tmp/rrm-recover/payload)"
+            echo "payload type: $(file -b /tmp/rrm-recover/payload)"
+          } > WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+
+          if tar -tf /tmp/rrm-recover/payload >/tmp/rrm-recover/list.txt 2>/dev/null; then
+            echo "archive format: tar" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            tar -xf /tmp/rrm-recover/payload -C /tmp/rrm-recover/extracted
+          elif unzip -t /tmp/rrm-recover/payload >/tmp/rrm-recover/unzip-test.txt 2>&1; then
+            echo "archive format: zip" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            unzip -q /tmp/rrm-recover/payload -d /tmp/rrm-recover/extracted
+          else
+            echo "archive format: unknown" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            file /tmp/rrm-recover/payload >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            exit 1
+          fi
+
+          find /tmp/rrm-recover/extracted -type f -printf '%P\n' | sort > WORKING/import-audit/PAYLOAD_FILE_LIST.txt
+
+          ROOT=/tmp/rrm-recover/extracted
+          if [ -f "$ROOT/package.json" ]; then
+            SOURCE_ROOT="$ROOT"
+          else
+            PKG=$(find "$ROOT" -maxdepth 3 -name package.json -type f | head -n 1 || true)
+            if [ -z "$PKG" ]; then
+              echo "No package.json found in recovered archive" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+              exit 1
+            fi
+            SOURCE_ROOT=$(dirname "$PKG")
+          fi
+
+          echo "source root: ${SOURCE_ROOT#/tmp/rrm-recover/extracted/}" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+
+          mkdir -p magazine-source/recovered
+          rsync -a --delete --exclude public "$SOURCE_ROOT/" magazine-source/recovered/
+
+          # Preserve the repository-owned RRM public assets as the runtime public tree.
+          rm -rf magazine-source/recovered/public
+          cp -a magazine-source/public magazine-source/recovered/public
+
+          cp magazine-source/recovered/package.json WORKING/import-audit/recovered-package.json
+
+      - name: Test recovered npm source
+        shell: bash
+        working-directory: magazine-source/recovered
+        run: |
+          set -euo pipefail
+          npm install
+          npm run build
+
+      - name: Record build verification
+        shell: bash
+        run: |
+          {
+            echo
+            echo "npm install: PASS"
+            echo "npm run build: PASS"
+            echo "tested node: $(node --version)"
+            echo "tested npm: $(npm --version)"
+          } >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+
+      - name: Commit recovered source and verification
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add magazine-source/recovered WORKING/import-audit
+          git commit -m "Recover and build staged reader source" || exit 0
+          git push
