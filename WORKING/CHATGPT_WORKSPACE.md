@@ -16,7 +16,6 @@ Temporary persistent workspace for active RRM work performed through ChatGPT.
   - Image dimensions: 1161 x 1648 px.
   - SHA-256 of the HAR-embedded JPEG: `48ce4021d1670fa685456ec111783e67b597f410fe9b05121b477d236b018766`.
   - Visual identity: Summer 2026, Issue No. 036, RARE Revolution Magazine cover featuring the RARE skin / RARE Inspiration cover artwork.
-  - The current runnable cover is wrong and must be replaced by this exact HAR page-1 artwork in the next build.
 - Inside cover: leave blank for now.
 - Printed page 1: leave blank for now.
 - Pages 2–87: match the HAR magazine pages; currently considered correct.
@@ -35,20 +34,19 @@ Temporary persistent workspace for active RRM work performed through ChatGPT.
   - HAR page GUID: `b92d3c82-c4b2-4e6b-9d1a-8cd7fa264065`.
   - HAR page-image URL: `https://pages.pagesuite.com/b/9/b92d3c82-c4b2-4e6b-9d1a-8cd7fa264065/page.jpg`.
   - HAR PDF URL: `https://pages.pagesuite.com/b/9/b92d3c82-c4b2-4e6b-9d1a-8cd7fa264065/page.pdf`.
-  - This HAR page 88 artwork replaces the current back-cover artwork in the next build.
 
 ## Runnable package QA
 - `RRM_RUNNABLE_1.0.5.zip` was reported as failing to start from PowerShell on Windows.
-- The 1.0.5 ZIP itself passes archive-integrity testing and its page-205 source edit is syntactically well-formed by static inspection, but its Windows launcher was fragile: the launcher was nested under `RRM_RUNNABLE/`, depended on PowerShell resolving `npm`, and did not retain a useful startup diagnostic log.
-- `RRM_RUNNABLE_1.0.6.zip` was prepared as the corrected Windows-launch package.
-  - Adds extraction-root `START_RRM.cmd` and `RUN_RRM.ps1` launchers.
-  - Uses `npm.cmd` explicitly on Windows to avoid npm.ps1 execution-policy conflicts.
-  - Runs PowerShell with `-ExecutionPolicy Bypass` from the CMD launcher.
-  - Writes startup/install/Vite errors to `RRM_RUNNABLE/RRM_START_LOG.txt`.
-  - Retries dependency setup once with `npm install` if `npm ci` fails.
-  - Archive integrity verified with `unzip -t`.
-  - SHA-256: `6d361e3a213705107e2105fd22bbf556fcf3e763f38c479b0d6d1292c7657541`.
-- Full dependency installation/build could not be completed in the current execution environment because `npm ci` timed out; do not mark the build itself as verified until a clean install/build succeeds.
+- `RRM_RUNNABLE_1.0.6.zip` corrected the Windows launcher, but visual review showed the approved front and back cover assets still were not rendered because the runnable source continued to use stale legacy/manifest cover paths.
+- Root cause confirmed on 2026-08-23: the exact HAR cover assets existed in GitHub, but the runnable source was not wired to them.
+- `RRM_RUNNABLE_1.0.7.zip` corrects the cover wiring:
+  - closed front cover uses the exact GitHub HAR page-1 asset;
+  - intro/first-open cover uses the exact GitHub HAR page-1 asset;
+  - closed back cover uses the exact GitHub HAR page-88 asset;
+  - stale reader-manifest cover paths no longer override the approved cover artwork.
+  - ZIP integrity verified with `unzip -t`.
+  - SHA-256: `d6c68341bc34f1b3ae371f1fef2bc0196c95a71826d38b9c595916977139ead8`.
+- Full dependency installation/build could not be completed in the current execution environment; do not mark the Vite build itself verified until a clean install/build succeeds.
 
 ## Purpose
 This branch is the persistent handoff location when the execution container is temporary or unavailable between turns.
