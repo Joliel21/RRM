@@ -28,6 +28,7 @@ Temporary persistent workspace for active RRM work performed through ChatGPT.
 - Page 197: leave as-is until its intended content is identified.
 - Pages 198–199: insert two-page Resources spread using `series-cover/resources.png`.
 - Existing content from page 198 onward shifts forward two pages after inserting the Resources spread.
+- Page 205: replace the existing page with `series-cover/References.png`.
 - Back cover: use exact page 88 from the attached `full-RRM.har`.
   - Verified from the HAR flatplan on 2026-08-23.
   - HAR page number: 88.
