@@ -1,8 +1,6 @@
 {
   "pageNumber": 205,
-  "action": "replace",
-  "type": "image",
-  "asset": "series-cover/References.png",
-  "alt": "References",
+  "action": "blank",
+  "type": "blank",
   "status": "approved"
 }
