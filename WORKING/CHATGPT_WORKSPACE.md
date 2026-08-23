@@ -28,6 +28,13 @@ Temporary persistent workspace for active RRM work performed through ChatGPT.
 - Page 197: leave as-is until its intended content is identified.
 - Pages 198–199: insert two-page Resources spread using `series-cover/resources.png`.
 - Existing content from page 198 onward shifts forward two pages after inserting the Resources spread.
+- Back cover: use exact page 88 from the attached `full-RRM.har`.
+  - Verified from the HAR flatplan on 2026-08-23.
+  - HAR page number: 88.
+  - HAR page GUID: `b92d3c82-c4b2-4e6b-9d1a-8cd7fa264065`.
+  - HAR page-image URL: `https://pages.pagesuite.com/b/9/b92d3c82-c4b2-4e6b-9d1a-8cd7fa264065/page.jpg`.
+  - HAR PDF URL: `https://pages.pagesuite.com/b/9/b92d3c82-c4b2-4e6b-9d1a-8cd7fa264065/page.pdf`.
+  - This HAR page 88 artwork replaces the current back-cover artwork in the next build.
 
 ## Purpose
 This branch is the persistent handoff location when the execution container is temporary or unavailable between turns.
