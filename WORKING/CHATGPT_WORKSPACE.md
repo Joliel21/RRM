@@ -1,0 +1,27 @@
+# ChatGPT Working Workspace
+
+Temporary persistent workspace for active RRM work performed through ChatGPT.
+
+## Rules
+- Work here on the `chatgpt-work` branch, not `main`.
+- Store temporary notes, manifests, page maps, generated text/config files, and work-in-progress references here.
+- When a file is approved, move/copy the finalized version into its proper repository location and merge the intended changes into `main`.
+- Do not treat files in this folder as production-ready unless explicitly marked approved.
+- Binary/source packages can be stored elsewhere on this branch when needed; this file serves as the persistent index/checkpoint.
+
+## Current RRM page-map decisions
+- Cover: use page 1 of the HAR magazine as the cover.
+- Inside cover: leave blank for now.
+- Printed page 1: leave blank for now.
+- Pages 2–87: match the HAR magazine pages; currently considered correct.
+- Pages 88–89: currently correct.
+- Pages 90–91: two-page spread using `series-cover/explore_more.png`.
+- Pages 96–97: two-page spread using `series-cover/insights.png`.
+- Pages 112–113: two-page RARE Revolutionaries / Rare Youth spread using `series-cover/rare-youth.png`.
+- Pages 138–141: community pictures from the repository `community/` collection; current reader paths need reconciliation.
+- Page 197: leave as-is until its intended content is identified.
+- Pages 198–199: insert two-page Resources spread using `series-cover/resources.png`.
+- Existing content from page 198 onward shifts forward two pages after inserting the Resources spread.
+
+## Purpose
+This branch is the persistent handoff location when the execution container is temporary or unavailable between turns.
