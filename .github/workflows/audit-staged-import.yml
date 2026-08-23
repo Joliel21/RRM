@@ -1,0 +1,97 @@
+name: Audit staged RRM import
+
+on:
+  push:
+    branches:
+      - rrm-current-work-20260823
+    paths:
+      - .github/workflows/audit-staged-import.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit-import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out current work branch
+        uses: actions/checkout@v4
+        with:
+          ref: rrm-current-work-20260823
+          fetch-depth: 0
+
+      - name: Validate and inspect staged source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p WORKING/import-audit
+          REPORT="WORKING/import-audit/STAGED_IMPORT_REPORT.txt"
+          : > "$REPORT"
+
+          echo "RRM staged import audit" >> "$REPORT"
+          echo "Branch: rrm-current-work-20260823" >> "$REPORT"
+          echo "Commit before audit: $(git rev-parse HEAD)" >> "$REPORT"
+          echo >> "$REPORT"
+
+          echo "== Files ==" >> "$REPORT"
+          for f in .import/part_{00..12}; do
+            test -s "$f"
+            wc -c "$f" >> "$REPORT"
+          done
+          test -s .import/chunk_00
+          wc -c .import/chunk_00 >> "$REPORT"
+          echo >> "$REPORT"
+
+          echo "== part_00..part_12 combined archive ==" >> "$REPORT"
+          cat .import/part_{00..12} > /tmp/rrm-parts.b64
+          base64 --decode /tmp/rrm-parts.b64 > /tmp/rrm-parts.xz
+          echo "Decoded bytes: $(wc -c < /tmp/rrm-parts.xz)" >> "$REPORT"
+          echo "SHA256: $(sha256sum /tmp/rrm-parts.xz | awk '{print $1}')" >> "$REPORT"
+          xz -t /tmp/rrm-parts.xz
+          echo "XZ integrity: PASS" >> "$REPORT"
+          xz -dc /tmp/rrm-parts.xz > /tmp/rrm-payload
+          echo "Decompressed bytes: $(wc -c < /tmp/rrm-payload)" >> "$REPORT"
+          echo "Payload type: $(file -b /tmp/rrm-payload)" >> "$REPORT"
+
+          if tar -tf /tmp/rrm-payload > WORKING/import-audit/PAYLOAD_FILE_LIST.txt 2>/tmp/tar.err; then
+            echo "Payload archive test: TAR PASS" >> "$REPORT"
+            echo "Payload entries: $(wc -l < WORKING/import-audit/PAYLOAD_FILE_LIST.txt)" >> "$REPORT"
+          elif unzip -l /tmp/rrm-payload > WORKING/import-audit/PAYLOAD_FILE_LIST.txt 2>/tmp/unzip.err; then
+            echo "Payload archive test: ZIP PASS" >> "$REPORT"
+            echo "Payload entries: $(grep -c '^ ' WORKING/import-audit/PAYLOAD_FILE_LIST.txt || true)" >> "$REPORT"
+          else
+            echo "Payload archive test: UNKNOWN/FAIL" >> "$REPORT"
+            echo "tar error:" >> "$REPORT"
+            cat /tmp/tar.err >> "$REPORT" || true
+            echo "unzip error:" >> "$REPORT"
+            cat /tmp/unzip.err >> "$REPORT" || true
+          fi
+          echo >> "$REPORT"
+
+          echo "== chunk_00 standalone check ==" >> "$REPORT"
+          base64 --decode .import/chunk_00 > /tmp/chunk00.bin
+          echo "Decoded bytes: $(wc -c < /tmp/chunk00.bin)" >> "$REPORT"
+          echo "Payload type: $(file -b /tmp/chunk00.bin)" >> "$REPORT"
+          if unzip -t /tmp/chunk00.bin >/tmp/chunk00-test.txt 2>&1; then
+            echo "chunk_00 ZIP integrity: PASS" >> "$REPORT"
+          else
+            echo "chunk_00 ZIP integrity: FAIL/INCOMPLETE" >> "$REPORT"
+            tail -n 8 /tmp/chunk00-test.txt >> "$REPORT" || true
+          fi
+
+          cat "$REPORT"
+
+      - name: Commit audit report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add WORKING/import-audit/STAGED_IMPORT_REPORT.txt WORKING/import-audit/PAYLOAD_FILE_LIST.txt
+          if git diff --cached --quiet; then
+            echo "No audit changes to commit."
+            exit 0
+          fi
+          git commit -m "Audit staged RRM source import"
+          git push origin HEAD:rrm-current-work-20260823
