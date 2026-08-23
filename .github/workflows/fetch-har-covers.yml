@@ -1,0 +1,60 @@
+name: Fetch exact HAR covers
+
+on:
+  push:
+    branches:
+      - chatgpt-work
+    paths:
+      - .github/workflows/fetch-har-covers.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-covers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out working branch
+        uses: actions/checkout@v4
+        with:
+          ref: chatgpt-work
+          fetch-depth: 0
+
+      - name: Download exact HAR cover artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p magazine-source/public/covers
+
+          curl -fL --retry 3 --retry-delay 2 -A "Mozilla/5.0" \
+            "https://pages.pagesuite.com/5/9/592aa374-340b-4d09-9cc8-9e8c635a4f55/largepage.jpg" \
+            -o magazine-source/public/covers/rrm-front-cover-har-page-1.jpg
+
+          curl -fL --retry 3 --retry-delay 2 -A "Mozilla/5.0" \
+            "https://pages.pagesuite.com/b/9/b92d3c82-c4b2-4e6b-9d1a-8cd7fa264065/page.jpg" \
+            -o magazine-source/public/covers/rrm-back-cover-har-page-88.jpg
+
+          test -s magazine-source/public/covers/rrm-front-cover-har-page-1.jpg
+          test -s magazine-source/public/covers/rrm-back-cover-har-page-88.jpg
+
+          FRONT_SHA=$(sha256sum magazine-source/public/covers/rrm-front-cover-har-page-1.jpg | awk '{print $1}')
+          test "$FRONT_SHA" = "48ce4021d1670fa685456ec111783e67b597f410fe9b05121b477d236b018766"
+
+          file magazine-source/public/covers/rrm-front-cover-har-page-1.jpg
+          file magazine-source/public/covers/rrm-back-cover-har-page-88.jpg
+          sha256sum magazine-source/public/covers/rrm-front-cover-har-page-1.jpg magazine-source/public/covers/rrm-back-cover-har-page-88.jpg
+
+      - name: Commit cover assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add magazine-source/public/covers/rrm-front-cover-har-page-1.jpg magazine-source/public/covers/rrm-back-cover-har-page-88.jpg
+          if git diff --cached --quiet; then
+            echo "Cover assets are already current."
+            exit 0
+          fi
+          git commit -m "Add exact HAR front and back cover assets"
+          git push origin HEAD:chatgpt-work
