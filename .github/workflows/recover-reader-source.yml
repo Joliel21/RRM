@@ -20,7 +20,7 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Diagnose and reconstruct staged archive
+      - name: Decode staged parts and recover archive
         shell: bash
         run: |
           set -euo pipefail
@@ -30,23 +30,51 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import base64, re
+
           parts = sorted(Path('.import').glob('part_*'))
-          raw = b''.join(p.read_bytes() for p in parts)
-          clean = re.sub(rb'[^A-Za-z0-9+/=]', b'', raw)
+          out = bytearray()
           lines = [
-              'Recovered staged source audit', '============================', '',
-              f'part files: {len(parts)}', f'encoded raw bytes: {len(raw)}',
-              f'base64 alphabet bytes: {len(clean)}', f'base64 length mod 4: {len(clean) % 4}',
-              f'padding count: {clean.count(b"=")}',
+              'Recovered staged source audit',
+              '============================',
+              '',
+              f'part files present: {len(parts)}',
+              'expected staged parts from Git history: 19',
+              f'missing staged parts: {max(0, 19-len(parts))}',
+              'decode mode: per-part binary append',
           ]
+
           for p in parts:
-              b = p.read_bytes(); c = re.sub(rb'[^A-Za-z0-9+/=]', b'', b)
-              lines.append(f'{p.name}: raw={len(b)} clean={len(c)} first={c[:24].decode("ascii", "replace")} last={c[-24:].decode("ascii", "replace")}')
-          padded = clean + b'=' * ((4 - len(clean) % 4) % 4)
-          decoded = base64.b64decode(padded, validate=False)
-          lines += [f'decoded bytes: {len(decoded)}', f'decoded magic hex: {decoded[:16].hex()}', 'base64 decode: PASS']
-          Path('WORKING/import-audit/STAGED_IMPORT_REPORT.txt').write_text('\n'.join(lines) + '\n', encoding='utf-8')
-          Path('/tmp/rrm-recover/parts.xz').write_bytes(decoded)
+              raw = p.read_bytes()
+              clean = re.sub(rb'[^A-Za-z0-9+/=]', b'', raw)
+              mod = len(clean) % 4
+              action = 'none'
+              candidate = clean
+              if mod in (2, 3):
+                  candidate += b'=' * (4-mod)
+                  action = f'pad_{4-mod}'
+              elif mod == 1:
+                  # A base64 length of 1 mod 4 cannot be valid. Preserve as much
+                  # as possible by trimming the last encoded character, and record it.
+                  candidate = clean[:-1]
+                  action = 'trim_last_char'
+              try:
+                  decoded = base64.b64decode(candidate, validate=False)
+                  out.extend(decoded)
+                  status = f'PASS decoded={len(decoded)}'
+              except Exception as exc:
+                  status = f'FAIL {exc!r}'
+              lines.append(
+                  f'{p.name}: raw={len(raw)} clean={len(clean)} mod4={mod} '
+                  f'adjust={action} first={clean[:16].decode("ascii","replace")} '
+                  f'last={clean[-16:].decode("ascii","replace")} {status}'
+              )
+
+          Path('/tmp/rrm-recover/parts.xz').write_bytes(out)
+          lines += [
+              f'appended decoded bytes: {len(out)}',
+              f'decoded magic hex: {bytes(out[:16]).hex()}',
+          ]
+          Path('WORKING/import-audit/STAGED_IMPORT_REPORT.txt').write_text('\n'.join(lines)+'\n', encoding='utf-8')
           PY
 
           file /tmp/rrm-recover/parts.xz | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
@@ -60,83 +88,82 @@ jobs:
           echo "xz decompress exit: $XZ_DEC" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
           echo "payload bytes: $(wc -c < /tmp/rrm-recover/payload)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
           echo "payload type: $(file -b /tmp/rrm-recover/payload)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
-          cat WORKING/import-audit/STAGED_IMPORT_REPORT.txt
 
           EXTRACTED=0
-          if tar -tf /tmp/rrm-recover/payload >/tmp/rrm-recover/list.txt 2>/tmp/rrm-recover/tar-list.err; then
-            echo "archive format: tar" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          if tar -tf /tmp/rrm-recover/payload >/tmp/rrm-recover/tar-list.txt 2>/tmp/rrm-recover/tar-list.err; then
+            echo "archive format: tar" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
             tar -xf /tmp/rrm-recover/payload -C /tmp/rrm-recover/extracted
             EXTRACTED=1
-          elif unzip -t /tmp/rrm-recover/payload >/tmp/rrm-recover/unzip-test.txt 2>&1; then
-            echo "archive format: zip" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
-            unzip -q /tmp/rrm-recover/payload -d /tmp/rrm-recover/extracted
-            EXTRACTED=1
           else
-            echo "archive format: not cleanly readable; attempting partial tar extraction" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            echo "archive format: damaged tar; attempting partial extraction" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
             set +e
             tar -xf /tmp/rrm-recover/payload -C /tmp/rrm-recover/extracted 2>/tmp/rrm-recover/tar-extract.err
             TAR_PARTIAL=$?
             set -e
-            echo "partial tar extraction exit: $TAR_PARTIAL" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
-            echo "tar list error:" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
-            head -n 5 /tmp/rrm-recover/tar-list.err >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt || true
-            echo "tar extract error:" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
-            head -n 5 /tmp/rrm-recover/tar-extract.err >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt || true
+            echo "partial tar extraction exit: $TAR_PARTIAL" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
             if find /tmp/rrm-recover/extracted -type f | grep -q .; then EXTRACTED=1; fi
           fi
 
           find /tmp/rrm-recover/extracted -type f -printf '%P\n' | sort > WORKING/import-audit/PAYLOAD_FILE_LIST.txt
-          echo "extracted files: $(wc -l < WORKING/import-audit/PAYLOAD_FILE_LIST.txt)" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
-          sed -n '1,80p' WORKING/import-audit/PAYLOAD_FILE_LIST.txt
+          echo "extracted files: $(wc -l < WORKING/import-audit/PAYLOAD_FILE_LIST.txt)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          echo "src files: $(grep -c '^src/' WORKING/import-audit/PAYLOAD_FILE_LIST.txt || true)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          grep -E '(^|/)package.json$|^src/|App\.tsx$|main\.tsx$|ClosedCover|ClosedBackCover|MagazinePageLayouts' WORKING/import-audit/PAYLOAD_FILE_LIST.txt | head -n 120 || true
+          cat WORKING/import-audit/STAGED_IMPORT_REPORT.txt
 
           if [ "$EXTRACTED" -ne 1 ]; then
-            echo "No recoverable archive files found" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
             exit 1
           fi
 
           ROOT=/tmp/rrm-recover/extracted
-          if [ -f "$ROOT/package.json" ]; then
-            SOURCE_ROOT="$ROOT"
-          else
-            PKG=$(find "$ROOT" -maxdepth 5 -name package.json -type f | head -n 1 || true)
-            if [ -z "$PKG" ]; then
-              echo "No package.json found in recovered archive" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
-              exit 1
-            fi
-            SOURCE_ROOT=$(dirname "$PKG")
+          PKG=$(find "$ROOT" -maxdepth 5 -name package.json -type f | head -n 1 || true)
+          if [ -z "$PKG" ]; then
+            echo "No package.json recovered" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            exit 1
           fi
-          echo "source root: ${SOURCE_ROOT#/tmp/rrm-recover/extracted/}" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          SOURCE_ROOT=$(dirname "$PKG")
+          echo "source root: ${SOURCE_ROOT#/tmp/rrm-recover/extracted/}" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
 
+          rm -rf magazine-source/recovered
           mkdir -p magazine-source/recovered
-          rsync -a --delete --exclude public --exclude node_modules --exclude dist "$SOURCE_ROOT/" magazine-source/recovered/
-          rm -rf magazine-source/recovered/public
+          rsync -a --exclude public --exclude node_modules --exclude dist "$SOURCE_ROOT/" magazine-source/recovered/
           cp -a magazine-source/public magazine-source/recovered/public
           cp magazine-source/recovered/package.json WORKING/import-audit/recovered-package.json
 
       - name: Test recovered npm source
+        id: npmtest
+        continue-on-error: true
         shell: bash
         working-directory: magazine-source/recovered
         run: |
-          set -euo pipefail
-          npm install
-          npm run build
+          set -o pipefail
+          npm install 2>&1 | tee ../../WORKING/import-audit/npm-install.log
+          INSTALL=${PIPESTATUS[0]}
+          if [ "$INSTALL" -ne 0 ]; then exit "$INSTALL"; fi
+          npm run build 2>&1 | tee ../../WORKING/import-audit/npm-build.log
 
       - name: Record build verification
+        if: always()
         shell: bash
         run: |
-          {
-            echo "npm install: PASS"
-            echo "npm run build: PASS"
-            echo "tested node: $(node --version)"
-            echo "tested npm: $(npm --version)"
-          } >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          if [ "${{ steps.npmtest.outcome }}" = "success" ]; then
+            echo "npm install/build: PASS" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          else
+            echo "npm install/build: FAIL" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          fi
+          echo "tested node: $(node --version)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          echo "tested npm: $(npm --version)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
 
-      - name: Commit recovered source and verification
-        if: github.event_name == 'push'
+      - name: Commit recovery evidence for inspection
+        if: always() && github.event_name == 'push'
         shell: bash
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add magazine-source/recovered WORKING/import-audit
-          git commit -m "Recover and build staged reader source" || exit 0
+          git commit -m "Record staged reader recovery evidence" || exit 0
           git push
+
+      - name: Fail when npm verification failed
+        if: steps.npmtest.outcome != 'success'
+        shell: bash
+        run: exit 1
