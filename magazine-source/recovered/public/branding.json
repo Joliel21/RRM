@@ -1,0 +1,23 @@
+{
+  "publicationName": "RARE Revolution Magazine",
+  "browserTitle": "RARE Revolution Magazine",
+  "logoUrl": "/images/brand/rare-revolution-trademark-logo.png",
+  "logoAlt": "RARE Revolution Magazine",
+  "colors": {
+    "primary": "#0A6E78",
+    "secondary": "#D1E8E9",
+    "accent": "#FFFFFF",
+    "accentLight": "#D1E8E9",
+    "surface": "#FFFFFF",
+    "ink": "#0F7F8A",
+    "border": "#D1E8E9",
+    "hover": "#0A6E78",
+    "readerBackground": "#75B7D1"
+  },
+  "fonts": {
+    "heading": "Arial",
+    "body": "Arial",
+    "interface": "Arial",
+    "googleFontsUrl": ""
+  }
+}

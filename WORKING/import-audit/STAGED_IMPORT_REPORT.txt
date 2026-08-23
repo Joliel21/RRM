@@ -1,0 +1,35 @@
+Recovered staged source audit
+============================
+
+part files present: 13
+expected staged parts from Git history: 19
+missing staged parts: 6
+decode mode: per-part binary append
+part_00: raw=15000 clean=15000 mod4=0 adjust=none first=/Td6WFoAAATm1rRG last=Z6Kf/ptGt9hQxfjD PASS decoded=11250
+part_01: raw=9000 clean=9000 mod4=0 adjust=none first=RmV+yL3tz8TwcuWQ last=KNDvub2J4+vqxL9C PASS decoded=6750
+part_02: raw=15000 clean=15000 mod4=0 adjust=none first=nfrjD68bbFqp25Q0 last=ZcbQp1Lf73dwRYlZ PASS decoded=11250
+part_03: raw=15000 clean=15000 mod4=0 adjust=none first=h0LTLHcEm21Jcp8q last=CCsv/tSJMjA9COOW PASS decoded=11250
+part_04: raw=15000 clean=15000 mod4=0 adjust=none first=OanFhgpP6fJOrvDF last=7VBfVL34R6PylTE= PASS decoded=11249
+part_05: raw=15000 clean=15000 mod4=0 adjust=none first=Zf0rA7m69ZQ6Z3As last=E3oHgE7S31j26aKx PASS decoded=11250
+part_06: raw=15000 clean=15000 mod4=0 adjust=none first=pCRvzvSv1WKpI5ns last=Cwo5jAqkG9TF8uQv PASS decoded=11250
+part_07: raw=15001 clean=15001 mod4=1 adjust=trim_last_char first=zJibVBYxqk0y9JGf last=xnugkOHRcLedm5tD PASS decoded=11250
+part_08: raw=15000 clean=15000 mod4=0 adjust=none first=hfcfM6bC2jAYK7cv last=5syAKvM+vf3u1c9z PASS decoded=11250
+part_09: raw=15000 clean=15000 mod4=0 adjust=none first=N5ampxJDHAM3/8Dj last=7R8CcnC/oxy4aI1y PASS decoded=11250
+part_10: raw=15000 clean=15000 mod4=0 adjust=none first=5N7v0pgdR+wBenE/ last=mlKiTvkFHHvQC0MO PASS decoded=11250
+part_11: raw=39823 clean=39823 mod4=3 adjust=pad_1 first=DTVu3t8RPHsroOzg last=GUJBPFTwpTOI1h5B PASS decoded=29867
+part_12: raw=34743 clean=34743 mod4=3 adjust=pad_1 first=s6sXQi+ACNm3D/7u last=GUJBPFTwpTOI1h5e PASS decoded=26057
+appended decoded bytes: 175173
+decoded magic hex: fd377a585a000004e6d6b44604c09ec5
+/tmp/rrm-recover/parts.xz: XZ compressed data, checksum CRC64
+xz integrity exit: 1
+xz decompress exit: 1
+payload bytes: 86715
+payload type: POSIX tar archive (GNU)
+archive format: damaged tar; attempting partial extraction
+partial tar extraction exit: 2
+extracted files: 19
+src files: 0
+source root: /tmp/rrm-recover/extracted
+npm install/build: FAIL
+tested node: v22.23.2
+tested npm: 10.9.8
