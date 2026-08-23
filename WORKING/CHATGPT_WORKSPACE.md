@@ -25,3 +25,6 @@ Temporary persistent workspace for active RRM work performed through ChatGPT.
 
 ## Purpose
 This branch is the persistent handoff location when the execution container is temporary or unavailable between turns.
+
+## Connector verification
+- 2026-08-23: GitHub read/write access verified from ChatGPT on the `chatgpt-work` branch.
