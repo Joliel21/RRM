@@ -30,78 +30,82 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import base64, re
-
           parts = sorted(Path('.import').glob('part_*'))
           raw = b''.join(p.read_bytes() for p in parts)
           clean = re.sub(rb'[^A-Za-z0-9+/=]', b'', raw)
-
           lines = [
-              'Recovered staged source audit',
-              '============================',
-              '',
-              f'part files: {len(parts)}',
-              f'encoded raw bytes: {len(raw)}',
-              f'base64 alphabet bytes: {len(clean)}',
-              f'base64 length mod 4: {len(clean) % 4}',
+              'Recovered staged source audit', '============================', '',
+              f'part files: {len(parts)}', f'encoded raw bytes: {len(raw)}',
+              f'base64 alphabet bytes: {len(clean)}', f'base64 length mod 4: {len(clean) % 4}',
               f'padding count: {clean.count(b"=")}',
           ]
           for p in parts:
-              b = p.read_bytes()
-              c = re.sub(rb'[^A-Za-z0-9+/=]', b'', b)
+              b = p.read_bytes(); c = re.sub(rb'[^A-Za-z0-9+/=]', b'', b)
               lines.append(f'{p.name}: raw={len(b)} clean={len(c)} first={c[:24].decode("ascii", "replace")} last={c[-24:].decode("ascii", "replace")}')
-
-          Path('WORKING/import-audit/STAGED_IMPORT_REPORT.txt').write_text('\n'.join(lines) + '\n', encoding='utf-8')
-          Path('/tmp/rrm-recover/parts.b64').write_bytes(clean)
-
-          # Try the concatenated stream as stored. Add only terminal padding if length requires it.
           padded = clean + b'=' * ((4 - len(clean) % 4) % 4)
-          try:
-              decoded = base64.b64decode(padded, validate=False)
-          except Exception as exc:
-              with open('WORKING/import-audit/STAGED_IMPORT_REPORT.txt', 'a', encoding='utf-8') as f:
-                  f.write(f'base64 decode: FAIL {exc!r}\n')
-              raise
-
+          decoded = base64.b64decode(padded, validate=False)
+          lines += [f'decoded bytes: {len(decoded)}', f'decoded magic hex: {decoded[:16].hex()}', 'base64 decode: PASS']
+          Path('WORKING/import-audit/STAGED_IMPORT_REPORT.txt').write_text('\n'.join(lines) + '\n', encoding='utf-8')
           Path('/tmp/rrm-recover/parts.xz').write_bytes(decoded)
-          with open('WORKING/import-audit/STAGED_IMPORT_REPORT.txt', 'a', encoding='utf-8') as f:
-              f.write(f'decoded bytes: {len(decoded)}\n')
-              f.write(f'decoded magic hex: {decoded[:16].hex()}\n')
-              f.write(f'base64 decode: PASS\n')
           PY
 
           file /tmp/rrm-recover/parts.xz | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          set +e
           xz -t /tmp/rrm-recover/parts.xz
-          echo "xz integrity: PASS" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          XZ_TEST=$?
           xz -dc /tmp/rrm-recover/parts.xz > /tmp/rrm-recover/payload
+          XZ_DEC=$?
+          set -e
+          echo "xz integrity exit: $XZ_TEST" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          echo "xz decompress exit: $XZ_DEC" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
           echo "payload bytes: $(wc -c < /tmp/rrm-recover/payload)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
           echo "payload type: $(file -b /tmp/rrm-recover/payload)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          cat WORKING/import-audit/STAGED_IMPORT_REPORT.txt
 
-          if tar -tf /tmp/rrm-recover/payload >/tmp/rrm-recover/list.txt 2>/dev/null; then
-            echo "archive format: tar" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          EXTRACTED=0
+          if tar -tf /tmp/rrm-recover/payload >/tmp/rrm-recover/list.txt 2>/tmp/rrm-recover/tar-list.err; then
+            echo "archive format: tar" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
             tar -xf /tmp/rrm-recover/payload -C /tmp/rrm-recover/extracted
+            EXTRACTED=1
           elif unzip -t /tmp/rrm-recover/payload >/tmp/rrm-recover/unzip-test.txt 2>&1; then
-            echo "archive format: zip" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            echo "archive format: zip" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
             unzip -q /tmp/rrm-recover/payload -d /tmp/rrm-recover/extracted
+            EXTRACTED=1
           else
-            echo "archive format: unknown" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
-            exit 1
+            echo "archive format: not cleanly readable; attempting partial tar extraction" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            set +e
+            tar -xf /tmp/rrm-recover/payload -C /tmp/rrm-recover/extracted 2>/tmp/rrm-recover/tar-extract.err
+            TAR_PARTIAL=$?
+            set -e
+            echo "partial tar extraction exit: $TAR_PARTIAL" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            echo "tar list error:" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            head -n 5 /tmp/rrm-recover/tar-list.err >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt || true
+            echo "tar extract error:" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            head -n 5 /tmp/rrm-recover/tar-extract.err >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt || true
+            if find /tmp/rrm-recover/extracted -type f | grep -q .; then EXTRACTED=1; fi
           fi
 
           find /tmp/rrm-recover/extracted -type f -printf '%P\n' | sort > WORKING/import-audit/PAYLOAD_FILE_LIST.txt
+          echo "extracted files: $(wc -l < WORKING/import-audit/PAYLOAD_FILE_LIST.txt)" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          sed -n '1,80p' WORKING/import-audit/PAYLOAD_FILE_LIST.txt
+
+          if [ "$EXTRACTED" -ne 1 ]; then
+            echo "No recoverable archive files found" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+            exit 1
+          fi
 
           ROOT=/tmp/rrm-recover/extracted
           if [ -f "$ROOT/package.json" ]; then
             SOURCE_ROOT="$ROOT"
           else
-            PKG=$(find "$ROOT" -maxdepth 4 -name package.json -type f | head -n 1 || true)
+            PKG=$(find "$ROOT" -maxdepth 5 -name package.json -type f | head -n 1 || true)
             if [ -z "$PKG" ]; then
-              echo "No package.json found in recovered archive" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+              echo "No package.json found in recovered archive" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
               exit 1
             fi
             SOURCE_ROOT=$(dirname "$PKG")
           fi
-
-          echo "source root: ${SOURCE_ROOT#/tmp/rrm-recover/extracted/}" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          echo "source root: ${SOURCE_ROOT#/tmp/rrm-recover/extracted/}" | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
 
           mkdir -p magazine-source/recovered
           rsync -a --delete --exclude public --exclude node_modules --exclude dist "$SOURCE_ROOT/" magazine-source/recovered/
