@@ -20,33 +20,61 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Reconstruct staged archive
+      - name: Diagnose and reconstruct staged archive
         shell: bash
         run: |
           set -euo pipefail
           rm -rf /tmp/rrm-recover
           mkdir -p /tmp/rrm-recover/extracted WORKING/import-audit
 
-          : > /tmp/rrm-recover/parts.xz
-          : > /tmp/rrm-recover/parts-size.txt
-          for f in .import/part_*; do
-            echo "$(basename "$f") $(wc -c < "$f")" >> /tmp/rrm-recover/parts-size.txt
-            base64 -d "$f" >> /tmp/rrm-recover/parts.xz
-          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, re
 
+          parts = sorted(Path('.import').glob('part_*'))
+          raw = b''.join(p.read_bytes() for p in parts)
+          clean = re.sub(rb'[^A-Za-z0-9+/=]', b'', raw)
+
+          lines = [
+              'Recovered staged source audit',
+              '============================',
+              '',
+              f'part files: {len(parts)}',
+              f'encoded raw bytes: {len(raw)}',
+              f'base64 alphabet bytes: {len(clean)}',
+              f'base64 length mod 4: {len(clean) % 4}',
+              f'padding count: {clean.count(b"=")}',
+          ]
+          for p in parts:
+              b = p.read_bytes()
+              c = re.sub(rb'[^A-Za-z0-9+/=]', b'', b)
+              lines.append(f'{p.name}: raw={len(b)} clean={len(c)} first={c[:24].decode("ascii", "replace")} last={c[-24:].decode("ascii", "replace")}')
+
+          Path('WORKING/import-audit/STAGED_IMPORT_REPORT.txt').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          Path('/tmp/rrm-recover/parts.b64').write_bytes(clean)
+
+          # Try the concatenated stream as stored. Add only terminal padding if length requires it.
+          padded = clean + b'=' * ((4 - len(clean) % 4) % 4)
+          try:
+              decoded = base64.b64decode(padded, validate=False)
+          except Exception as exc:
+              with open('WORKING/import-audit/STAGED_IMPORT_REPORT.txt', 'a', encoding='utf-8') as f:
+                  f.write(f'base64 decode: FAIL {exc!r}\n')
+              raise
+
+          Path('/tmp/rrm-recover/parts.xz').write_bytes(decoded)
+          with open('WORKING/import-audit/STAGED_IMPORT_REPORT.txt', 'a', encoding='utf-8') as f:
+              f.write(f'decoded bytes: {len(decoded)}\n')
+              f.write(f'decoded magic hex: {decoded[:16].hex()}\n')
+              f.write(f'base64 decode: PASS\n')
+          PY
+
+          file /tmp/rrm-recover/parts.xz | tee -a WORKING/import-audit/STAGED_IMPORT_REPORT.txt
           xz -t /tmp/rrm-recover/parts.xz
+          echo "xz integrity: PASS" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
           xz -dc /tmp/rrm-recover/parts.xz > /tmp/rrm-recover/payload
-
-          {
-            echo "Recovered staged source audit"
-            echo "============================"
-            echo
-            echo "part files: $(ls .import/part_* | wc -l)"
-            echo "encoded part bytes: $(awk '{s += $2} END {print s}' /tmp/rrm-recover/parts-size.txt)"
-            echo "xz bytes: $(wc -c < /tmp/rrm-recover/parts.xz)"
-            echo "payload bytes: $(wc -c < /tmp/rrm-recover/payload)"
-            echo "payload type: $(file -b /tmp/rrm-recover/payload)"
-          } > WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          echo "payload bytes: $(wc -c < /tmp/rrm-recover/payload)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
+          echo "payload type: $(file -b /tmp/rrm-recover/payload)" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
 
           if tar -tf /tmp/rrm-recover/payload >/tmp/rrm-recover/list.txt 2>/dev/null; then
             echo "archive format: tar" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
@@ -56,7 +84,6 @@ jobs:
             unzip -q /tmp/rrm-recover/payload -d /tmp/rrm-recover/extracted
           else
             echo "archive format: unknown" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
-            file /tmp/rrm-recover/payload >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
             exit 1
           fi
 
@@ -66,7 +93,7 @@ jobs:
           if [ -f "$ROOT/package.json" ]; then
             SOURCE_ROOT="$ROOT"
           else
-            PKG=$(find "$ROOT" -maxdepth 3 -name package.json -type f | head -n 1 || true)
+            PKG=$(find "$ROOT" -maxdepth 4 -name package.json -type f | head -n 1 || true)
             if [ -z "$PKG" ]; then
               echo "No package.json found in recovered archive" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
               exit 1
@@ -77,11 +104,9 @@ jobs:
           echo "source root: ${SOURCE_ROOT#/tmp/rrm-recover/extracted/}" >> WORKING/import-audit/STAGED_IMPORT_REPORT.txt
 
           mkdir -p magazine-source/recovered
-          rsync -a --delete --exclude public "$SOURCE_ROOT/" magazine-source/recovered/
-
+          rsync -a --delete --exclude public --exclude node_modules --exclude dist "$SOURCE_ROOT/" magazine-source/recovered/
           rm -rf magazine-source/recovered/public
           cp -a magazine-source/public magazine-source/recovered/public
-
           cp magazine-source/recovered/package.json WORKING/import-audit/recovered-package.json
 
       - name: Test recovered npm source
@@ -96,7 +121,6 @@ jobs:
         shell: bash
         run: |
           {
-            echo
             echo "npm install: PASS"
             echo "npm run build: PASS"
             echo "tested node: $(node --version)"
