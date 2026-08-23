@@ -11,6 +11,12 @@ Temporary persistent workspace for active RRM work performed through ChatGPT.
 
 ## Current RRM page-map decisions
 - Cover: use page 1 of the HAR magazine as the cover.
+  - Verified directly from attached `full-RRM.har` on 2026-08-23.
+  - HAR page-image URL: `https://pages.pagesuite.com/5/9/592aa374-340b-4d09-9cc8-9e8c635a4f55/largepage.jpg`
+  - Image dimensions: 1161 x 1648 px.
+  - SHA-256 of the HAR-embedded JPEG: `48ce4021d1670fa685456ec111783e67b597f410fe9b05121b477d236b018766`.
+  - Visual identity: Summer 2026, Issue No. 036, RARE Revolution Magazine cover featuring the RARE skin / RARE Inspiration cover artwork.
+  - The current runnable cover is wrong and must be replaced by this exact HAR page-1 artwork in the next build.
 - Inside cover: leave blank for now.
 - Printed page 1: leave blank for now.
 - Pages 2–87: match the HAR magazine pages; currently considered correct.
