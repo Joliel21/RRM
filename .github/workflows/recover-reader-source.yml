@@ -27,8 +27,13 @@ jobs:
           rm -rf /tmp/rrm-recover
           mkdir -p /tmp/rrm-recover/extracted WORKING/import-audit
 
-          cat .import/part_* > /tmp/rrm-recover/parts.b64
-          base64 -d /tmp/rrm-recover/parts.b64 > /tmp/rrm-recover/parts.xz
+          : > /tmp/rrm-recover/parts.xz
+          : > /tmp/rrm-recover/parts-size.txt
+          for f in .import/part_*; do
+            echo "$(basename "$f") $(wc -c < "$f")" >> /tmp/rrm-recover/parts-size.txt
+            base64 -d "$f" >> /tmp/rrm-recover/parts.xz
+          done
+
           xz -t /tmp/rrm-recover/parts.xz
           xz -dc /tmp/rrm-recover/parts.xz > /tmp/rrm-recover/payload
 
@@ -37,7 +42,7 @@ jobs:
             echo "============================"
             echo
             echo "part files: $(ls .import/part_* | wc -l)"
-            echo "base64 bytes: $(wc -c < /tmp/rrm-recover/parts.b64)"
+            echo "encoded part bytes: $(awk '{s += $2} END {print s}' /tmp/rrm-recover/parts-size.txt)"
             echo "xz bytes: $(wc -c < /tmp/rrm-recover/parts.xz)"
             echo "payload bytes: $(wc -c < /tmp/rrm-recover/payload)"
             echo "payload type: $(file -b /tmp/rrm-recover/payload)"
