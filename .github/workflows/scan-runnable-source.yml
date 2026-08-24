@@ -7,7 +7,10 @@ on:
 
 jobs:
   scan:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout full history
         uses: actions/checkout@v4
@@ -31,7 +34,7 @@ jobs:
             files="$(git ls-tree -r --name-only "$c")"
             pkg="$(printf '%s\n' "$files" | grep -E '(^|/)package\.json$' | head -n 1 || true)"
             main="$(printf '%s\n' "$files" | grep -E '(^|/)src/main\.(tsx|ts|jsx|js)$' | head -n 1 || true)"
-            app="$(printf '%s\n' "$files" | grep -E '(^|/)src/App\.(tsx|ts|jsx|js)$' | head -n 1 || true)"
+            app="$(printf '%s\n' "$files" | grep -E '(^|/)src/(app/)?App\.(tsx|ts|jsx|js)$' | head -n 1 || true)"
             if [ -n "$pkg" ] && [ -n "$main" ]; then
               printf '%s|%s|%s|%s\n' "$c" "$pkg" "$main" "$app" >> recovery-output/candidates.txt
             fi
@@ -41,7 +44,7 @@ jobs:
           echo "candidate_count=$count" >> recovery-output/scan-summary.txt
           if [ "$count" -gt 0 ]; then
             echo "Newest candidates:" >> recovery-output/scan-summary.txt
-            head -n 20 recovery-output/candidates.txt >> recovery-output/scan-summary.txt
+            head -n 50 recovery-output/candidates.txt >> recovery-output/scan-summary.txt
           else
             echo "No commit contains both package.json and src/main.*." >> recovery-output/scan-summary.txt
           fi
@@ -51,9 +54,23 @@ jobs:
             if git rev-parse --verify "$ref" >/dev/null 2>&1 || git rev-parse --verify "origin/$ref" >/dev/null 2>&1; then
               r="$ref"; git rev-parse --verify "$ref" >/dev/null 2>&1 || r="origin/$ref"
               echo "[$ref]" >> recovery-output/scan-summary.txt
-              git ls-tree -r --name-only "$r" | grep -E '(^|/)(package\.json|src/main\.(tsx|ts|jsx|js)|src/App\.(tsx|ts|jsx|js))$' >> recovery-output/scan-summary.txt || true
+              git ls-tree -r --name-only "$r" | grep -E '(^|/)(package\.json|src/main\.(tsx|ts|jsx|js)|src/(app/)?App\.(tsx|ts|jsx|js))$' >> recovery-output/scan-summary.txt || true
             fi
           done
+
+      - name: Commit scan report to audit branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add recovery-output/candidates.txt recovery-output/scan-summary.txt
+          if git diff --cached --quiet; then
+            echo "No report changes to commit."
+          else
+            git commit -m "Record runnable source history scan"
+            git push
+          fi
 
       - name: Upload scan report
         uses: actions/upload-artifact@v4
