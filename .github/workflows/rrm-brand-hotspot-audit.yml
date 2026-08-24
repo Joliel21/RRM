@@ -1,0 +1,115 @@
+name: RRM brand hotspot audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/rrm-brand-hotspot-audit.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install scan tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq tesseract-ocr librsvg2-bin python3-pil
+      - name: Scan artwork for RARE Revolution Magazine
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p WORKING/hotspot-audit/rendered
+          python3 - <<'PY'
+          import csv,json,re,subprocess
+          from pathlib import Path
+          from PIL import Image
+          ROOT=Path('.')
+          OUT=ROOT/'WORKING/hotspot-audit'
+          URL='https://rarerevolutionmagazine.com/'
+          assets=[
+            ([90,91],'series-cover/explore_more.png',True),
+            ([92,93],'series-cover/Explore_Series.png',True),
+            ([94,95],'magazine-source/public/images/rare-pages/insider.png',True),
+            ([96,97],'series-cover/insights.png',True),
+            ([196],'magazine-source/public/images/bsyndro.png',False),
+            ([197],'magazine-source/public/images/rare-pages/rare-siblings-impact-report-cover.png',False),
+            ([198,199],'series-cover/ads/rare_revolution_insider_membership_clickable.svg',True),
+            ([200,201],'series-cover/resources.png',True),
+            ([204,205],'series-cover/References.png',True),
+            ([214],'series-cover/ads/RARE_Revolution_Shop_Ad_Final_Clickable_Flags_In_Amazon_Box.svg',False),
+            ([215],'magazine-source/public/brand/rrm-intro-overlay.png',False),
+          ]
+          def norm(s): return re.sub(r'[^a-z]+','',s.lower())
+          def render(src,out):
+            if src.suffix.lower()=='.svg': subprocess.run(['rsvg-convert','-o',str(out),str(src)],check=True)
+            else: Image.open(src).convert('RGB').save(out)
+          def rows(img):
+            base=str(img.with_suffix(''))+'_ocr'
+            subprocess.run(['tesseract',str(img),base,'--psm','11','tsv'],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            found=[]
+            with open(base+'.tsv',newline='',encoding='utf-8') as f:
+              for r in csv.DictReader(f,delimiter='\t'):
+                text=(r.get('text') or '').strip()
+                try: conf=float(r.get('conf') or -1)
+                except: conf=-1
+                if text and conf>=15:
+                  found.append({'text':text,'left':int(r['left']),'top':int(r['top']),'width':int(r['width']),'height':int(r['height'])})
+            return found
+          def hits(rs):
+            out=[]; ws=[norm(r['text']) for r in rs]
+            for i,w in enumerate(ws):
+              if not w.startswith('rare'): continue
+              for j in range(i+1,min(i+7,len(rs))):
+                if 'revolution' not in ws[j]: continue
+                for k in range(j+1,min(j+7,len(rs))):
+                  if 'magazine' not in ws[k]: continue
+                  seq=rs[i:k+1]
+                  l=min(r['left'] for r in seq); t=min(r['top'] for r in seq)
+                  rr=max(r['left']+r['width'] for r in seq); bb=max(r['top']+r['height'] for r in seq)
+                  out.append((l,t,rr-l,bb-t,[r['text'] for r in seq])); break
+                break
+            return out
+          report=[]; hotspots=[]
+          for pages,path,spread in assets:
+            src=ROOT/path; item={'asset':path,'pages':pages,'exists':src.exists(),'detections':[]}
+            if not src.exists(): report.append(item); continue
+            png=OUT/'rendered'/(src.stem+'.png'); render(src,png); W,H=Image.open(png).size
+            for l,t,w,h,words in hits(rows(png)):
+              padx=max(4,int(W*.006)); pady=max(3,int(H*.005))
+              l=max(0,l-padx); t=max(0,t-pady); w=min(W-l,w+2*padx); h=min(H-t,h+2*pady)
+              item['detections'].append({'bbox':[l,t,w,h],'words':words,'imageSize':[W,H]})
+              if spread:
+                half=W/2; center=l+w/2; idx=0 if center < half else 1
+                page=pages[idx]
+                local_l=max(0,l if idx==0 else l-half)
+                local_r=min(half,(l+w) if idx==0 else (l+w-half))
+                x=local_l/half*100; ww=(local_r-local_l)/half*100
+              else:
+                page=pages[0]; x=l/W*100; ww=w/W*100
+              hotspots.append({'pageNumber':page,'label':'Open RARE Revolution Magazine website','href':URL,'x':round(x,3),'y':round(t/H*100,3),'width':round(ww,3),'height':round(h/H*100,3),'sourceAsset':path,'detectedText':' '.join(words)})
+            report.append(item)
+          (OUT/'ocr-report.json').write_text(json.dumps(report,indent=2))
+          (OUT/'brand-hotspots.json').write_text(json.dumps({'destination':URL,'hotspots':hotspots},indent=2))
+          md=['# RRM brand hotspot audit','',f'Destination: `{URL}`','']
+          for item in report:
+            md.append(f"## {item['asset']} — pages {', '.join(map(str,item['pages']))}")
+            if not item['exists']: md.append('- Asset missing.')
+            elif not item['detections']: md.append('- Exact phrase not detected by OCR.')
+            else:
+              for d in item['detections']: md.append(f"- Detected: `{' '.join(d['words'])}`; bbox `{d['bbox']}` on `{d['imageSize']}`")
+            md.append('')
+          md.append('## Hotspots generated')
+          for h in hotspots: md.append(f"- Page {h['pageNumber']}: x {h['x']}%, y {h['y']}%, width {h['width']}%, height {h['height']}% — {h['sourceAsset']}")
+          (OUT/'AUDIT.md').write_text('\n'.join(md)+'\n')
+          PY
+      - name: Commit audit report
+        run: |
+          rm -rf WORKING/hotspot-audit/rendered
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add WORKING/hotspot-audit
+          git commit -m 'Record RRM brand hotspot audit' || exit 0
+          git push
