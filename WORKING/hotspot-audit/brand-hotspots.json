@@ -1,5 +1,7 @@
 {
   "destination": "https://rarerevolutionmagazine.com/",
+  "scope": "Final printed pages 89 through inside back cover",
+  "reviewStatus": "approved-after-ocr-review",
   "hotspots": [
     {
       "pageNumber": 92,
@@ -24,28 +26,6 @@
       "detectedText": "RARE Revolution Magazine"
     },
     {
-      "pageNumber": 94,
-      "label": "Open RARE Revolution Magazine website",
-      "href": "https://rarerevolutionmagazine.com/",
-      "x": 21.25,
-      "y": 90.308,
-      "width": 78.75,
-      "height": 5.874,
-      "sourceAsset": "magazine-source/public/images/rare-pages/insider.png",
-      "detectedText": "rare disease professionals. Explore RARE Revolution insider rarerevolutionmagazine.com/insider-splash/"
-    },
-    {
-      "pageNumber": 95,
-      "label": "Open RARE Revolution Magazine website",
-      "href": "https://rarerevolutionmagazine.com/",
-      "x": 18.646,
-      "y": 90.308,
-      "width": 48.646,
-      "height": 5.874,
-      "sourceAsset": "magazine-source/public/images/rare-pages/insider.png",
-      "detectedText": "RARE Revolution insider rarerevolutionmagazine.com/insider-splash/"
-    },
-    {
       "pageNumber": 96,
       "label": "Open RARE Revolution Magazine website",
       "href": "https://rarerevolutionmagazine.com/",
@@ -65,7 +45,7 @@
       "width": 34.554,
       "height": 2.668,
       "sourceAsset": "series-cover/ads/rare_revolution_insider_membership_clickable.svg",
-      "detectedText": "RARE Revolution Magazine\u00ae"
+      "detectedText": "RARE Revolution Magazine®"
     },
     {
       "pageNumber": 200,
@@ -88,6 +68,16 @@
       "height": 6.351,
       "sourceAsset": "series-cover/References.png",
       "detectedText": "RARE REVOLUTION MAGAZINE"
+    }
+  ],
+  "excludedOcrFalsePositives": [
+    {
+      "pageNumber": 94,
+      "reason": "OCR joined unrelated text with rarerevolutionmagazine.com/insider-splash; visible phrase is not RARE Revolution Magazine."
+    },
+    {
+      "pageNumber": 95,
+      "reason": "Visible wording is RARE Revolution insider / rarerevolutionmagazine.com/insider-splash, not the requested phrase."
     }
   ]
 }
