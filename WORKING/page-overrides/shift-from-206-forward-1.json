@@ -1,0 +1,17 @@
+{
+  "action": "shift_range",
+  "sourceStartPage": 206,
+  "offsetPages": 1,
+  "direction": "forward",
+  "applyAfterExistingOverrides": true,
+  "includeExistingOverrides": true,
+  "vacatedPages": [206],
+  "examples": {
+    "206": 207,
+    "207": 208,
+    "208": 209,
+    "209": 210
+  },
+  "note": "Move every effective magazine page/content assignment from page 206 onward forward by one page while preserving order. Pages 204-205 remain unchanged, including the References spread. Page 206 becomes the vacated page.",
+  "status": "approved"
+}
