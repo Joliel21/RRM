@@ -1,0 +1,62 @@
+name: Scan runnable RRM source
+
+on:
+  push:
+    branches:
+      - npm-package-recovery-20260823
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all refs
+        run: git fetch --all --tags --prune
+
+      - name: Scan history for runnable source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p recovery-output
+          : > recovery-output/candidates.txt
+          : > recovery-output/scan-summary.txt
+          echo "HEAD=$(git rev-parse HEAD)" >> recovery-output/scan-summary.txt
+          echo "Scanning all reachable commits for package.json plus app entry files..." >> recovery-output/scan-summary.txt
+
+          git rev-list --all | while read -r c; do
+            files="$(git ls-tree -r --name-only "$c")"
+            pkg="$(printf '%s\n' "$files" | grep -E '(^|/)package\.json$' | head -n 1 || true)"
+            main="$(printf '%s\n' "$files" | grep -E '(^|/)src/main\.(tsx|ts|jsx|js)$' | head -n 1 || true)"
+            app="$(printf '%s\n' "$files" | grep -E '(^|/)src/App\.(tsx|ts|jsx|js)$' | head -n 1 || true)"
+            if [ -n "$pkg" ] && [ -n "$main" ]; then
+              printf '%s|%s|%s|%s\n' "$c" "$pkg" "$main" "$app" >> recovery-output/candidates.txt
+            fi
+          done
+
+          count=$(wc -l < recovery-output/candidates.txt | tr -d ' ')
+          echo "candidate_count=$count" >> recovery-output/scan-summary.txt
+          if [ "$count" -gt 0 ]; then
+            echo "Newest candidates:" >> recovery-output/scan-summary.txt
+            head -n 20 recovery-output/candidates.txt >> recovery-output/scan-summary.txt
+          else
+            echo "No commit contains both package.json and src/main.*." >> recovery-output/scan-summary.txt
+          fi
+
+          echo "Direct path checks across current refs:" >> recovery-output/scan-summary.txt
+          for ref in main chatgpt-work import-804-reader rrm-current-work-20260823 rrm-npm-vite-20260823; do
+            if git rev-parse --verify "$ref" >/dev/null 2>&1 || git rev-parse --verify "origin/$ref" >/dev/null 2>&1; then
+              r="$ref"; git rev-parse --verify "$ref" >/dev/null 2>&1 || r="origin/$ref"
+              echo "[$ref]" >> recovery-output/scan-summary.txt
+              git ls-tree -r --name-only "$r" | grep -E '(^|/)(package\.json|src/main\.(tsx|ts|jsx|js)|src/App\.(tsx|ts|jsx|js))$' >> recovery-output/scan-summary.txt || true
+            fi
+          done
+
+      - name: Upload scan report
+        uses: actions/upload-artifact@v4
+        with:
+          name: runnable-source-scan
+          path: recovery-output/
