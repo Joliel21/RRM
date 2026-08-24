@@ -1,7 +1,11 @@
 {
   "pageNumber": 202,
-  "action": "blank",
-  "type": "blank",
-  "movedToPage": 204,
+  "action": "replace",
+  "type": "spread-image",
+  "asset": "series-cover/References.png",
+  "spreadStartPage": 202,
+  "spreadEndPage": 203,
+  "spreadPosition": "left",
+  "alt": "References",
   "status": "approved"
 }
