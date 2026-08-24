@@ -1,0 +1,223 @@
+[
+  {
+    "asset": "series-cover/explore_more.png",
+    "pages": [
+      90,
+      91
+    ],
+    "exists": true,
+    "hits": []
+  },
+  {
+    "asset": "series-cover/Explore_Series.png",
+    "pages": [
+      92,
+      93
+    ],
+    "exists": true,
+    "hits": [
+      {
+        "bbox": [
+          46,
+          53,
+          486,
+          24
+        ],
+        "words": [
+          "RARE",
+          "REVOLUTION",
+          "MAGAZINE"
+        ],
+        "size": [
+          1920,
+          1362
+        ]
+      }
+    ]
+  },
+  {
+    "asset": "magazine-source/public/images/rare-pages/insider.png",
+    "pages": [
+      94,
+      95
+    ],
+    "exists": true,
+    "hits": [
+      {
+        "bbox": [
+          74,
+          294,
+          482,
+          56
+        ],
+        "words": [
+          "RARE",
+          "Revolution",
+          "Magazine"
+        ],
+        "size": [
+          1920,
+          1362
+        ]
+      },
+      {
+        "bbox": [
+          1141,
+          1231,
+          463,
+          78
+        ],
+        "words": [
+          "RARE",
+          "Revolution",
+          "insider",
+          "rarerevolutionmagazine.com/insider-splash/"
+        ],
+        "size": [
+          1920,
+          1362
+        ]
+      }
+    ]
+  },
+  {
+    "asset": "series-cover/insights.png",
+    "pages": [
+      96,
+      97
+    ],
+    "exists": true,
+    "hits": [
+      {
+        "bbox": [
+          97,
+          82,
+          354,
+          23
+        ],
+        "words": [
+          "RARE",
+          "REVOLUTION",
+          "MAGAZINE"
+        ],
+        "size": [
+          1920,
+          1362
+        ]
+      }
+    ]
+  },
+  {
+    "asset": "magazine-source/public/images/bsyndro.png",
+    "pages": [
+      196
+    ],
+    "exists": false,
+    "hits": []
+  },
+  {
+    "asset": "magazine-source/public/images/rare-pages/rare-siblings-impact-report-cover.png",
+    "pages": [
+      197
+    ],
+    "exists": true,
+    "hits": []
+  },
+  {
+    "asset": "series-cover/ads/rare_revolution_insider_membership_clickable.svg",
+    "pages": [
+      198,
+      199
+    ],
+    "exists": true,
+    "hits": [
+      {
+        "bbox": [
+          35,
+          275,
+          248,
+          27
+        ],
+        "words": [
+          "RARE",
+          "Revolution",
+          "Magazine\u00ae"
+        ],
+        "size": [
+          1447,
+          1087
+        ]
+      }
+    ]
+  },
+  {
+    "asset": "series-cover/resources.png",
+    "pages": [
+      200,
+      201
+    ],
+    "exists": true,
+    "hits": [
+      {
+        "bbox": [
+          76,
+          113,
+          399,
+          29
+        ],
+        "words": [
+          "RARE",
+          "REVOLUTION",
+          "MAGAZINE"
+        ],
+        "size": [
+          1920,
+          1362
+        ]
+      }
+    ]
+  },
+  {
+    "asset": "series-cover/References.png",
+    "pages": [
+      204,
+      205
+    ],
+    "exists": true,
+    "hits": [
+      {
+        "bbox": [
+          68,
+          67,
+          387,
+          61
+        ],
+        "words": [
+          "RARE",
+          "REVOLUTION",
+          "MAGAZINE"
+        ],
+        "size": [
+          1586,
+          992
+        ]
+      }
+    ]
+  },
+  {
+    "asset": "series-cover/ads/RARE_Revolution_Shop_Ad_Final_Clickable_Flags_In_Amazon_Box.svg",
+    "pages": [
+      214
+    ],
+    "exists": true,
+    "hits": []
+  },
+  {
+    "asset": "magazine-source/public/brand/rrm-intro-overlay.png",
+    "pages": [
+      215
+    ],
+    "exists": true,
+    "hits": []
+  }
+]

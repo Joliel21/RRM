@@ -1,0 +1,6 @@
+level	page_num	block_num	par_num	line_num	word_num	left	top	width	height	conf	text
+1	1	0	0	0	0	0	0	1536	1024	-1	
+2	1	1	0	0	0	336	467	798	138	-1	
+3	1	1	1	0	0	336	433	798	191	-1	
+4	1	1	1	1	0	336	467	798	138	-1	
+5	1	1	1	1	1	336	467	798	138	96.042892	REVOLUTION
