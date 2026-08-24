@@ -1,0 +1,19 @@
+{
+  "version": "1.0.10",
+  "action": "place_pages",
+  "placements": [
+    {"fromPage": 207, "toPage": 206},
+    {"fromPage": 209, "toPage": 207},
+    {"fromPage": 210, "toPage": 209}
+  ],
+  "result": {
+    "206": "Weblinks and References intro",
+    "207": "Weblinks and References archive",
+    "208": "blank",
+    "209": "Previous Editions archive",
+    "210": "blank",
+    "211": "Spotlight Editions archive",
+    "212-213": "Media Centre spread"
+  },
+  "status": "approved"
+}
