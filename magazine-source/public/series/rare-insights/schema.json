@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "articleFields": {
+    "id": "stable article slug/id",
+    "title": "published article title or null until verified",
+    "author": "published author/byline or null until verified",
+    "date": "publication date or null until verified",
+    "url": "canonical article URL",
+    "image": "RARE Revolution article image path or source URL",
+    "series": "RARE INSIGHTS series display name",
+    "metadataStatus": "complete, partial, or pending-migration"
+  },
+  "rules": [
+    "Do not invent missing author or date metadata.",
+    "Use the image used by RARE Revolution for the article whenever verified.",
+    "Add new articles to the matching articles.json first.",
+    "Title pages remain in series/rare-insights/ and are referenced by manifest.json.",
+    "Clickable behavior belongs in the magazine hotspot/link layer, not in artwork files."
+  ]
+}
