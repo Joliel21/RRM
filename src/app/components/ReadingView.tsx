@@ -320,7 +320,7 @@ const getSeriesThemeRule = (page: MagazinePage): SeriesThemeRule | null => {
 };
 
 
-const isSeriesTitleSpread = (page: MagazinePage) => {
+const isMajorSeriesCoverSpread = (page: MagazinePage) => {
   const identity = getPageIdentity(page);
   return [
     "rare-insights-spread-title-page",
@@ -330,9 +330,16 @@ const isSeriesTitleSpread = (page: MagazinePage) => {
     "rare-charities-spread",
     "resources-spread-page",
     "series-cover/resources.png",
-  ].some((token) => identity.includes(token)) ||
+  ].some((token) => identity.includes(token));
+};
+
+const isSeriesTitleSpread = (page: MagazinePage) => {
+  const identity = getPageIdentity(page);
+  return (
+    isMajorSeriesCoverSpread(page) ||
     identity.includes("intro-page") ||
-    identity.includes("title-page");
+    identity.includes("title-page")
+  );
 };
 
 const PageContent = ({
@@ -364,6 +371,7 @@ const PageContent = ({
   const rareInsightsTitleColor = useRareInsightsTitleColor(page);
   const seriesTheme = getSeriesThemeRule(page);
   const isSeriesTitleSpreadPage = isSeriesTitleSpread(page);
+  const isMajorSeriesCoverSpreadPage = isMajorSeriesCoverSpread(page);
   const isRareInsightsSeriesPage = seriesTheme?.key === "rare-insights";
   const isSeriesRightPage = page.pageNumber % 2 !== 0;
 
@@ -419,7 +427,7 @@ const PageContent = ({
           }
         `}</style>
         {layout}
-        {seriesTheme && (isRareInsightsSeriesPage || !isSeriesTitleSpreadPage) ? (
+        {seriesTheme && (isRareInsightsSeriesPage ? !isMajorSeriesCoverSpreadPage : !isSeriesTitleSpreadPage) ? (
           <div
             className="pointer-events-none absolute bottom-0 left-0 right-0 z-[9999]"
             style={{
@@ -559,7 +567,7 @@ const PageContent = ({
         </div>
       ) : null}
 
-{seriesTheme && (isRareInsightsSeriesPage || !isSeriesTitleSpreadPage) ? (
+{seriesTheme && (isRareInsightsSeriesPage ? !isMajorSeriesCoverSpreadPage : !isSeriesTitleSpreadPage) ? (
   <>
     <style>{`
       .series-themed-page * {
