@@ -9961,6 +9961,9 @@ const withRareInsightsFooterRow = (
 };
 
 RARE_INSIGHTS_FOOTER_LAYOUT_IDS.forEach((layoutId) => {
+  // SSTPs never receive a generated footer bar.
+  if (layoutId.includes("intro") || layoutId.includes("title")) return;
+
   const LayoutComponent = LAYOUT_REGISTRY[layoutId];
   if (LayoutComponent) {
     LAYOUT_REGISTRY[layoutId] = withRareInsightsFooterRow(LayoutComponent);

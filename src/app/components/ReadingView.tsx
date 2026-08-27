@@ -476,7 +476,7 @@ const PageContent = ({
           }
         `}</style>
         {layout}
-        {seriesTheme && (isRareInsightsSeriesPage ? !isMajorSeriesCoverSpreadPage : !isSeriesTitleSpreadPage) ? (
+        {seriesTheme && !isSeriesTitleSpreadPage ? (
           <div
             className="pointer-events-none absolute bottom-0 left-0 right-0 z-[9999]"
             style={{
@@ -553,7 +553,7 @@ const PageContent = ({
       ) : null}
 
 
-{seriesTheme && (isRareInsightsSeriesPage ? !isMajorSeriesCoverSpreadPage : !isSeriesTitleSpreadPage) ? (
+{seriesTheme && !isSeriesTitleSpreadPage ? (
   <>
     <style>{`
       .series-themed-page * {
