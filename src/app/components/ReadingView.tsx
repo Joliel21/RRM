@@ -474,6 +474,70 @@ const PageContent = ({
         />
       ) : null}
 
+      {page.id === "a-day-in-life-intro-page" ? (
+        <div
+          className="pointer-events-none absolute z-[140] overflow-hidden"
+          style={{
+            left: "9.5%",
+            right: "7.5%",
+            top: "55.7%",
+            bottom: "6.8%",
+            background: "#f9f8f5",
+            color: "#222222",
+            fontFamily: "Arial, Helvetica, sans-serif",
+          }}
+        >
+          <div
+            className="grid h-full"
+            style={{
+              gridTemplateColumns: "52% 48%",
+              fontSize: "19px",
+              lineHeight: 1.43,
+            }}
+          >
+            <div className="flex h-full flex-col" style={{ paddingRight: "30px" }}>
+              <p style={{ margin: 0, marginBottom: "22px" }}>
+                First-person accounts from people living with rare conditions, family members, caregivers, advocates and professionals.
+              </p>
+              <p style={{ margin: 0 }}>
+                These personal accounts bring the realities of rare disease into sharper focus, exploring how diagnosis, treatment and uncertainty can shape everyday routines, relationships, careers, education, independence and identity. They reveal the practical challenges, difficult decisions, unexpected adaptations and meaningful moments that clinical descriptions often leave out.
+              </p>
+              <div
+                style={{
+                  marginTop: "22px",
+                  borderTop: "2px solid #C99B38",
+                  paddingTop: "16px",
+                  color: "#C99B38",
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: "27px",
+                  fontWeight: 700,
+                  lineHeight: 1.08,
+                }}
+              >
+                Real stories. Real perspectives.<br />
+                Real impact.
+              </div>
+            </div>
+            <div
+              style={{
+                borderLeft: "2px solid #C99B38",
+                paddingLeft: "38px",
+              }}
+            >
+              <p style={{ margin: 0, marginBottom: "22px" }}>
+                They reveal the practical challenges, difficult decisions, unexpected adaptations and meaningful moments that clinical descriptions often leave out.
+              </p>
+              <p style={{ margin: 0, marginBottom: "22px" }}>
+                By centering the voices of those directly affected, A Day in the Life shows the person beyond the condition and the full life surrounding it.
+              </p>
+              <p style={{ margin: 0 }}>
+                Together, these stories move beyond awareness to build understanding, challenge assumptions and place the human experience at the forefront.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
 {seriesTheme ? (
   <>
     <style>{`
