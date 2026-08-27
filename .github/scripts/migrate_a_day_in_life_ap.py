@@ -56,6 +56,16 @@ for match in entry_pattern.finditer(array_body):
 if not articles:
     raise SystemExit('No A Day in the Life article records were extracted')
 
+# Remove the hardcoded array before making any other edits so its offsets stay valid.
+layouts = layouts[:array_match.start()] + layouts[array_match.end():]
+layouts = re.sub(
+    r'const shortenDayInLifeTitle\s*=\s*\(title: string, maxLength = 58\)\s*=>\s*\{.*?\};\s*',
+    '',
+    layouts,
+    count=1,
+    flags=re.S,
+)
+
 articles_path.parent.mkdir(parents=True, exist_ok=True)
 payload = {
     'schemaVersion': 1,
@@ -242,23 +252,13 @@ export const SeriesArticlePage = ({
 };
 ''', encoding='utf-8')
 
-# Import the reusable component.
+# Import the reusable component after the hardcoded array has been removed.
 import_anchor = 'import travelSeriesJoeRumneyImage from "@/assets/travel-series-joe-rumney.png";\n'
 import_line = 'import { SeriesArticlePage } from "./SeriesArticlePage";\n'
 if import_line not in layouts:
     if import_anchor not in layouts:
         raise SystemExit('Import anchor not found')
     layouts = layouts.replace(import_anchor, import_anchor + import_line, 1)
-
-# Remove the hardcoded records and their title-specific helper.
-layouts = layouts[:array_match.start()] + layouts[array_match.end():]
-layouts = re.sub(
-    r'const shortenDayInLifeTitle\s*=\s*\(title: string, maxLength = 58\)\s*=>\s*\{.*?\};\s*',
-    '',
-    layouts,
-    count=1,
-    flags=re.S,
-)
 
 # Replace only the A Day in the Life AP implementation with the generic renderer.
 layout_start = layouts.find('const ADayInLifeScrollLayout = () => (')
