@@ -1,9 +1,8 @@
 {
   "pageNumber": 196,
   "action": "replace",
-  "type": "svg",
-  "asset": "magazine-source/public/Bardet_Biedl_Syndrome_Clickable.svg",
-  "preserveSvgLinks": true,
+  "type": "image",
+  "asset": "magazine-source/public/images/bardet_biedl_syndrome.png",
   "alt": "Bardet-Biedl syndrome",
   "status": "approved"
 }

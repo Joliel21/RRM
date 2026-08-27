@@ -2,12 +2,12 @@
   "pageNumber": 215,
   "action": "replace",
   "type": "blank-with-watermark",
-  "watermarkAsset": "magazine-source/public/brand/rrm-intro-overlay.png",
+  "watermarkAsset": "images/brand/watermark.png",
   "watermarkPosition": {
     "horizontal": "center",
     "verticalPercent": 63,
     "widthPercent": 40
   },
-  "alt": "RARE Revolution inside back cover watermark",
+  "alt": "RARE Revolution inside back cover watermark only",
   "status": "approved"
 }
