@@ -1,0 +1,24 @@
+name: ChatGPT export Rare Insights
+
+on:
+  push:
+    branches:
+      - chatgpt-rare-insights-export
+    paths:
+      - .github/workflows/chatgpt-export-rare-insights.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload Rare Insights source images
+        uses: actions/upload-artifact@v4
+        with:
+          name: rare-insights-source-images
+          path: series/rare-insights/*.png
+          if-no-files-found: error
+          compression-level: 0
