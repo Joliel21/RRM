@@ -254,6 +254,55 @@ const useRareInsightsTitleColor = (pageNumber: number) => {
   return color;
 };
 
+
+type SeriesThemeRule = {
+  key: string;
+  color: string;
+};
+
+const SERIES_THEME_RULES: Record<string, SeriesThemeRule> = {
+  rareInsights: { key: "rare-insights", color: "#C99B38" },
+  peopleOfRare: { key: "people-of-rare", color: "#111111" },
+  digitalSpotlight: { key: "digital-spotlight", color: "#00AEEF" },
+  charityPartners: { key: "charity-partners", color: "#69B83E" },
+  rareReports: { key: "rare-reports", color: "#7650A4" },
+  resources: { key: "resources", color: "#169C9C" },
+};
+
+const getSeriesThemeRule = (page: MagazinePage): SeriesThemeRule | null => {
+  const identity = [page.id, page.layoutId, page.imageUrl, page.alt]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (identity.includes("digital-spotlight") || identity.includes("digital spotlight")) {
+    return SERIES_THEME_RULES.digitalSpotlight;
+  }
+  if (
+    identity.includes("people-of-rare") || identity.includes("people of rare") ||
+    identity.includes("ceo-series") || identity.includes("ceo series") ||
+    identity.includes("patient-engagement") || identity.includes("patient engagement") ||
+    identity.includes("rare-entrepreneur") || identity.includes("rare entrepreneur")
+  ) return SERIES_THEME_RULES.peopleOfRare;
+  if (
+    identity.includes("charity-partners") || identity.includes("charity partners") ||
+    identity.includes("rare-charities")
+  ) return SERIES_THEME_RULES.charityPartners;
+  if (
+    identity.includes("rare-reports") || identity.includes("rare reports") ||
+    identity.includes("rare-siblings") || identity.includes("rare siblings") ||
+    identity.includes("bbs-report")
+  ) return SERIES_THEME_RULES.rareReports;
+  if (identity.includes("resources") || identity.includes("rare resources")) {
+    return SERIES_THEME_RULES.resources;
+  }
+  if (
+    identity.includes("rare-insights") || identity.includes("rare insights") ||
+    Boolean(RARE_INSIGHTS_ARCHIVE_TITLE_ART[page.pageNumber])
+  ) return SERIES_THEME_RULES.rareInsights;
+  return null;
+};
+
 const PageContent = ({
   page,
   onNavigate,
@@ -281,6 +330,8 @@ const PageContent = ({
   const spreadRightPages = new Set([91, 93, 95, 97, 113, 133, 145, 167, 195, 201, 203, 207, 215]);
   const isFullBleedSpreadPage = fullBleedSpreadPages.has(page.pageNumber);
   const rareInsightsTitleColor = useRareInsightsTitleColor(page.pageNumber);
+  const seriesTheme = getSeriesThemeRule(page);
+  const isSeriesRightPage = page.pageNumber % 2 !== 0;
 
   if (
     page.type === "layout" &&
@@ -298,20 +349,51 @@ const PageContent = ({
       />
     );
 
-    if (!rareInsightsTitleColor) return layout;
+
+    if (!seriesTheme && !rareInsightsTitleColor) return layout;
 
     return (
       <div
-        className="rare-insights-matched-background relative h-full w-full overflow-hidden"
+        className={`series-themed-page relative h-full w-full overflow-hidden ${
+          isSeriesRightPage ? "series-right-page" : "series-left-page"
+        } ${rareInsightsTitleColor ? "rare-insights-matched-background" : ""}`}
+        data-series-theme={seriesTheme?.key}
         style={{
-          backgroundColor: rareInsightsTitleColor,
-          "--rare-insights-title-color": rareInsightsTitleColor,
+          backgroundColor: rareInsightsTitleColor || undefined,
+          "--rare-insights-title-color": rareInsightsTitleColor || undefined,
+          "--series-accent": seriesTheme?.color || undefined,
         } as CSSProperties}
       >
-        <style>{`.rare-insights-matched-background > div { background: var(--rare-insights-title-color) !important; }`}</style>
+        <style>{`
+          .rare-insights-matched-background > div {
+            background: var(--rare-insights-title-color) !important;
+          }
+          .series-themed-page * {
+            scrollbar-color: var(--series-accent) rgba(255,255,255,0.18) !important;
+          }
+          .series-themed-page *::-webkit-scrollbar-thumb {
+            background: var(--series-accent) !important;
+            border-color: transparent !important;
+          }
+          .series-themed-page *::-webkit-scrollbar-thumb:hover {
+            background: var(--series-accent) !important;
+          }
+          .series-themed-page.series-right-page .shrink-0 > p:first-of-type,
+          .series-themed-page.series-right-page header > p:first-of-type {
+            color: var(--series-accent) !important;
+          }
+        `}</style>
         {layout}
+        {seriesTheme ? (
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0 z-[150] h-[10px]"
+            style={{ backgroundColor: seriesTheme.color }}
+            aria-hidden="true"
+          />
+        ) : null}
       </div>
     );
+
   }
 
   return (
@@ -368,6 +450,29 @@ const PageContent = ({
           }}
         />
       ) : null}
+
+{seriesTheme ? (
+  <>
+    <style>{`
+      .series-themed-page * {
+        scrollbar-color: var(--series-accent) rgba(255,255,255,0.18) !important;
+      }
+      .series-themed-page *::-webkit-scrollbar-thumb {
+        background: var(--series-accent) !important;
+        border-color: transparent !important;
+      }
+      .series-themed-page.series-right-page .shrink-0 > p:first-of-type,
+      .series-themed-page.series-right-page header > p:first-of-type {
+        color: var(--series-accent) !important;
+      }
+    `}</style>
+    <div
+      className="static-series-bottom-bar pointer-events-none absolute bottom-0 left-0 right-0 z-[150] h-[10px]"
+      style={{ backgroundColor: seriesTheme.color }}
+      aria-hidden="true"
+    />
+  </>
+) : null}
       {page.watermarkUrl && (
         <img
           src={page.watermarkUrl}
