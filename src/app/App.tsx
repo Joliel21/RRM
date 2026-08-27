@@ -4240,20 +4240,29 @@ ${chapterDescription.body}`,
             107: resolveRepositoryAssetUrl("/images/rare-pages/page-107-blank.png"),
           };
 
-          // Pre-shift pages 88–89 render as final printed pages 90–91 after
+          // Pre-shift page 88 renders as final printed page 90 after
           // the blank inside cover and blank page 1 are inserted below.
-          // The approved content is the Explore More two-page spread.
-          for (let pageNumber = 88; pageNumber <= 89; pageNumber++) {
-            const importedPageId = `explore-more-spread-page-${pageNumber}`;
-            finalPages.push({
-              id: importedPageId,
-              pageNumber,
-              type: "image",
-              imageUrl: resolveRepositoryRootAssetUrl("/images/explore-more.png"),
-              alt: `Explore More series spread page ${pageNumber + 2}`,
-              hotspots: [],
-            });
-          }
+          // Render the approved A Day in the Life title artwork directly.
+          finalPages.push({
+            id: "a-day-in-life-page-90",
+            pageNumber: 88,
+            type: "image",
+            imageUrl: resolveRepositoryRootAssetUrl(
+              "/series/rare-insights/a-day-in-a-life.png",
+            ),
+            alt: "RARE INSIGHTS A Day in the Life title page",
+            hotspots: [],
+          });
+
+          // Pre-shift page 89 remains the existing final printed page 91 content.
+          finalPages.push({
+            id: "explore-more-spread-page-89",
+            pageNumber: 89,
+            type: "image",
+            imageUrl: resolveRepositoryRootAssetUrl("/images/explore-more.png"),
+            alt: "Explore More series spread page 91",
+            hotspots: [],
+          });
 
 // Final printed pages 92–93 use the approved Explore the Series spread.
           // These are pre-shift pages 90–91; the global +2 shift below makes them final 92–93.
