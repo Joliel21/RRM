@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef, type RefObject } from "react";
+import { useEffect, useState, useRef, type RefObject, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { MagazinePage, type MagazineHotspot } from "@/app/data/magazine-data";
 import type { EditorialHotspot } from "@/app/data/hotspot-registry";
 import { HotspotEditorPanel } from "./HotspotEditorPanel";
+import { resolveRepositoryRootAssetUrl } from "@/app/config/repository-assets";
 import {
   LAYOUT_REGISTRY,
   ContentBlock,
@@ -165,6 +166,94 @@ const EditableHotspotBox = ({
   );
 };
 
+const RARE_INSIGHTS_ARCHIVE_TITLE_ART: Record<number, string> = {
+  97: resolveRepositoryRootAssetUrl("/series/rare-insights/a-day-in-a-life.png"),
+  99: resolveRepositoryRootAssetUrl("/series/rare-insights/charity-and-advocacy.png"),
+  101: resolveRepositoryRootAssetUrl("/series/rare-insights/industry-insights.png"),
+  103: resolveRepositoryRootAssetUrl("/series/rare-insights/editors-letters.png"),
+  105: resolveRepositoryRootAssetUrl("/series/rare-insights/medical.png"),
+  107: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),
+  108: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),
+  109: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),
+  113: resolveRepositoryRootAssetUrl("/series/rare-insights/patient-voice.png"),
+  115: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-caregiving.png"),
+  117: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-ramblings.png"),
+  119: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-rev-inar.png"),
+  121: resolveRepositoryRootAssetUrl("/series/rare-insights/reviews.png"),
+  123: resolveRepositoryRootAssetUrl("/series/rare-insights/science-and-tech.png"),
+  125: resolveRepositoryRootAssetUrl("/series/rare-insights/sunday-sessions.png"),
+  127: resolveRepositoryRootAssetUrl("/series/rare-insights/turning-the-tide.png"),
+  129: resolveRepositoryRootAssetUrl("/series/rare-insights/travel-series.png"),
+};
+
+const rareInsightsBackgroundCache = new Map<string, string>();
+
+const useRareInsightsTitleColor = (pageNumber: number) => {
+  const source = RARE_INSIGHTS_ARCHIVE_TITLE_ART[pageNumber] || "";
+  const [color, setColor] = useState<string | null>(() =>
+    source ? rareInsightsBackgroundCache.get(source) || null : null,
+  );
+
+  useEffect(() => {
+    if (!source) {
+      setColor(null);
+      return;
+    }
+
+    const cached = rareInsightsBackgroundCache.get(source);
+    if (cached) {
+      setColor(cached);
+      return;
+    }
+
+    let cancelled = false;
+    const image = new Image();
+    image.decoding = "async";
+    image.onload = () => {
+      if (cancelled) return;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 20;
+        canvas.height = 20;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return;
+        ctx.drawImage(image, 0, 0, 20, 20);
+        const data = ctx.getImageData(0, 0, 20, 20).data;
+        const groups = new Map<string, { n: number; r: number; g: number; b: number }>();
+        for (let y = 0; y < 20; y += 1) {
+          for (let x = 0; x < 20; x += 1) {
+            const i = (y * 20 + x) * 4;
+            if (data[i + 3] < 200) continue;
+            const edge = x < 4 || x > 15 || y < 4 || y > 15;
+            const weight = edge ? 4 : 1;
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const key = [Math.round(r / 24), Math.round(g / 24), Math.round(b / 24)].join("-");
+            const group = groups.get(key) || { n: 0, r: 0, g: 0, b: 0 };
+            group.n += weight;
+            group.r += r * weight;
+            group.g += g * weight;
+            group.b += b * weight;
+            groups.set(key, group);
+          }
+        }
+        const best = Array.from(groups.values()).sort((a, b) => b.n - a.n)[0];
+        if (!best || !best.n) return;
+        const sampled = "rgb(" + Math.round(best.r / best.n) + ", " + Math.round(best.g / best.n) + ", " + Math.round(best.b / best.n) + ")";
+        rareInsightsBackgroundCache.set(source, sampled);
+        if (!cancelled) setColor(sampled);
+      } catch (error) {
+        console.warn("Could not sample title-page color", error);
+      }
+    };
+    image.src = source;
+    return () => { cancelled = true; };
+  }, [source]);
+
+  return color;
+};
+
 const PageContent = ({
   page,
   onNavigate,
@@ -191,6 +280,7 @@ const PageContent = ({
   const spreadLeftPages = new Set([90, 92, 94, 96, 112, 132, 144, 166, 194, 200, 202, 206, 214]);
   const spreadRightPages = new Set([91, 93, 95, 97, 113, 133, 145, 167, 195, 201, 203, 207, 215]);
   const isFullBleedSpreadPage = fullBleedSpreadPages.has(page.pageNumber);
+  const rareInsightsTitleColor = useRareInsightsTitleColor(page.pageNumber);
 
   if (
     page.type === "layout" &&
@@ -198,7 +288,7 @@ const PageContent = ({
     LAYOUT_REGISTRY[page.layoutId]
   ) {
     const LayoutComponent = LAYOUT_REGISTRY[page.layoutId];
-    return (
+    const layout = (
       <LayoutComponent
         page={page}
         onNavigate={onNavigate}
@@ -206,6 +296,21 @@ const PageContent = ({
         blocks={blocks}
         onUpdateBlocks={onUpdateBlocks}
       />
+    );
+
+    if (!rareInsightsTitleColor) return layout;
+
+    return (
+      <div
+        className="rare-insights-matched-background relative h-full w-full overflow-hidden"
+        style={{
+          backgroundColor: rareInsightsTitleColor,
+          "--rare-insights-title-color": rareInsightsTitleColor,
+        } as CSSProperties}
+      >
+        <style>{`.rare-insights-matched-background > div { background: var(--rare-insights-title-color) !important; }`}</style>
+        {layout}
+      </div>
     );
   }
 
