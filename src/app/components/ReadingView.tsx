@@ -166,30 +166,42 @@ const EditableHotspotBox = ({
   );
 };
 
-const RARE_INSIGHTS_ARCHIVE_TITLE_ART: Record<number, string> = {
-  97: resolveRepositoryRootAssetUrl("/series/rare-insights/a-day-in-a-life.png"),
-  99: resolveRepositoryRootAssetUrl("/series/rare-insights/charity-and-advocacy.png"),
-  101: resolveRepositoryRootAssetUrl("/series/rare-insights/industry-insights.png"),
-  103: resolveRepositoryRootAssetUrl("/series/rare-insights/editors-letters.png"),
-  105: resolveRepositoryRootAssetUrl("/series/rare-insights/medical.png"),
-  107: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),
-  108: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),
-  109: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),
-  113: resolveRepositoryRootAssetUrl("/series/rare-insights/patient-voice.png"),
-  115: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-caregiving.png"),
-  117: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-ramblings.png"),
-  119: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-rev-inar.png"),
-  121: resolveRepositoryRootAssetUrl("/series/rare-insights/reviews.png"),
-  123: resolveRepositoryRootAssetUrl("/series/rare-insights/science-and-tech.png"),
-  125: resolveRepositoryRootAssetUrl("/series/rare-insights/sunday-sessions.png"),
-  127: resolveRepositoryRootAssetUrl("/series/rare-insights/turning-the-tide.png"),
-  129: resolveRepositoryRootAssetUrl("/series/rare-insights/travel-series.png"),
+const RARE_INSIGHTS_TITLE_ART_BY_TOKEN = [
+  { tokens: ["a-day-in-life"], asset: "/series/rare-insights/a-day-in-a-life.png" },
+  { tokens: ["charity-advocacy"], asset: "/series/rare-insights/charity-and-advocacy.png" },
+  { tokens: ["industry-insights"], asset: "/series/rare-insights/industry-insights.png" },
+  { tokens: ["editors-letters"], asset: "/series/rare-insights/editors-letters.png" },
+  { tokens: ["medical"], asset: "/series/rare-insights/medical.png" },
+  { tokens: ["news-press"], asset: "/series/rare-insights/news-and-press-releases.png" },
+  { tokens: ["patient-voice"], asset: "/series/rare-insights/patient-voice.png" },
+  { tokens: ["rare-caregiving"], asset: "/series/rare-insights/rare-caregiving.png" },
+  { tokens: ["rare-ramblings"], asset: "/series/rare-insights/rare-ramblings.png" },
+  { tokens: ["rare-rev-inar"], asset: "/series/rare-insights/rare-rev-inar.png" },
+  { tokens: ["reviews"], asset: "/series/rare-insights/reviews.png" },
+  { tokens: ["science-and-tech"], asset: "/series/rare-insights/science-and-tech.png" },
+  { tokens: ["sunday-sessions"], asset: "/series/rare-insights/sunday-sessions.png" },
+  { tokens: ["travel-series"], asset: "/series/rare-insights/travel-series.png" },
+  { tokens: ["turning-the-tide"], asset: "/series/rare-insights/turning-the-tide.png" },
+] as const;
+
+const getPageIdentity = (page: MagazinePage) =>
+  [page.id, page.layoutId, page.imageUrl, page.alt]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+const getRareInsightsTitleArt = (page: MagazinePage) => {
+  const identity = getPageIdentity(page);
+  const match = RARE_INSIGHTS_TITLE_ART_BY_TOKEN.find(({ tokens }) =>
+    tokens.some((token) => identity.includes(token)),
+  );
+  return match ? resolveRepositoryRootAssetUrl(match.asset) : "";
 };
 
 const rareInsightsBackgroundCache = new Map<string, string>();
 
-const useRareInsightsTitleColor = (pageNumber: number) => {
-  const source = RARE_INSIGHTS_ARCHIVE_TITLE_ART[pageNumber] || "";
+const useRareInsightsTitleColor = (page: MagazinePage) => {
+  const source = getRareInsightsTitleArt(page);
   const [color, setColor] = useState<string | null>(() =>
     source ? rareInsightsBackgroundCache.get(source) || null : null,
   );
@@ -209,23 +221,25 @@ const useRareInsightsTitleColor = (pageNumber: number) => {
     let cancelled = false;
     const image = new Image();
     image.decoding = "async";
+    image.crossOrigin = "anonymous";
     image.onload = () => {
       if (cancelled) return;
       try {
         const canvas = document.createElement("canvas");
-        canvas.width = 20;
-        canvas.height = 20;
+        canvas.width = 24;
+        canvas.height = 24;
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (!ctx) return;
-        ctx.drawImage(image, 0, 0, 20, 20);
-        const data = ctx.getImageData(0, 0, 20, 20).data;
+        ctx.drawImage(image, 0, 0, 24, 24);
+        const data = ctx.getImageData(0, 0, 24, 24).data;
         const groups = new Map<string, { n: number; r: number; g: number; b: number }>();
-        for (let y = 0; y < 20; y += 1) {
-          for (let x = 0; x < 20; x += 1) {
-            const i = (y * 20 + x) * 4;
+
+        for (let y = 0; y < 24; y += 1) {
+          for (let x = 0; x < 24; x += 1) {
+            const i = (y * 24 + x) * 4;
             if (data[i + 3] < 200) continue;
-            const edge = x < 4 || x > 15 || y < 4 || y > 15;
-            const weight = edge ? 4 : 1;
+            const edge = x < 5 || x > 18 || y < 5 || y > 18;
+            const weight = edge ? 5 : 1;
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
@@ -238,22 +252,24 @@ const useRareInsightsTitleColor = (pageNumber: number) => {
             groups.set(key, group);
           }
         }
+
         const best = Array.from(groups.values()).sort((a, b) => b.n - a.n)[0];
         if (!best || !best.n) return;
-        const sampled = "rgb(" + Math.round(best.r / best.n) + ", " + Math.round(best.g / best.n) + ", " + Math.round(best.b / best.n) + ")";
+        const sampled = `rgb(${Math.round(best.r / best.n)}, ${Math.round(best.g / best.n)}, ${Math.round(best.b / best.n)})`;
         rareInsightsBackgroundCache.set(source, sampled);
         if (!cancelled) setColor(sampled);
       } catch (error) {
-        console.warn("Could not sample title-page color", error);
+        console.warn("Could not sample RARE INSIGHTS title-page color", error);
       }
     };
     image.src = source;
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [source]);
 
   return color;
 };
-
 
 type SeriesThemeRule = {
   key: string;
@@ -298,7 +314,7 @@ const getSeriesThemeRule = (page: MagazinePage): SeriesThemeRule | null => {
   }
   if (
     identity.includes("rare-insights") || identity.includes("rare insights") ||
-    Boolean(RARE_INSIGHTS_ARCHIVE_TITLE_ART[page.pageNumber])
+    Boolean(getRareInsightsTitleArt(page))
   ) return SERIES_THEME_RULES.rareInsights;
   return null;
 };
@@ -329,7 +345,7 @@ const PageContent = ({
   const spreadLeftPages = new Set([90, 92, 94, 96, 112, 132, 144, 166, 194, 200, 202, 206, 214]);
   const spreadRightPages = new Set([91, 93, 95, 97, 113, 133, 145, 167, 195, 201, 203, 207, 215]);
   const isFullBleedSpreadPage = fullBleedSpreadPages.has(page.pageNumber);
-  const rareInsightsTitleColor = useRareInsightsTitleColor(page.pageNumber);
+  const rareInsightsTitleColor = useRareInsightsTitleColor(page);
   const seriesTheme = getSeriesThemeRule(page);
   const isSeriesRightPage = page.pageNumber % 2 !== 0;
 
@@ -365,7 +381,8 @@ const PageContent = ({
         } as CSSProperties}
       >
         <style>{`
-          .rare-insights-matched-background > div {
+          .rare-insights-matched-background > div,
+          .rare-insights-matched-background > div > .shrink-0 {
             background: var(--rare-insights-title-color) !important;
           }
           .series-themed-page * {
@@ -399,7 +416,13 @@ const PageContent = ({
   return (
     <div
       ref={pageContainerRef}
-      className="relative w-full h-full overflow-hidden"
+      className={`relative w-full h-full overflow-hidden ${
+        seriesTheme ? "series-themed-page" : ""
+      } ${seriesTheme && isSeriesRightPage ? "series-right-page" : ""}`}
+      data-series-theme={seriesTheme?.key}
+      style={{
+        "--series-accent": seriesTheme?.color || undefined,
+      } as CSSProperties}
       data-static-community-page={
         page.pageNumber >= 98 && page.pageNumber <= 101 ? "true" : undefined
       }
