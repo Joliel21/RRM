@@ -448,6 +448,15 @@ const PageContent = ({
             background: var(--series-accent) !important;
             scrollbar-color: #000000 rgba(255,255,255,0.28) !important;
           }
+          .series-themed-page.series-article-page[data-series-theme="people-of-rare"] [class*="overflow-y-auto"],
+          .series-themed-page.series-article-page[data-series-theme="people-of-rare"] [class*="overscroll-contain"] {
+            background: #111111 !important;
+            background-color: #111111 !important;
+          }
+          .series-themed-page.series-article-page[data-series-theme="people-of-rare"] [class*="overflow-y-auto"] > div,
+          .series-themed-page.series-article-page[data-series-theme="people-of-rare"] [class*="overscroll-contain"] > div {
+            background: transparent !important;
+          }
           .series-themed-page.series-article-page [class*="overflow-y-auto"]::-webkit-scrollbar-thumb,
           .series-themed-page.series-article-page [class*="overscroll-contain"]::-webkit-scrollbar-thumb {
             background: #000000 !important;
