@@ -1,4 +1,4 @@
-name: Match RARE INSIGHTS archive colors
+name: Apply series color rule
 
 on:
   push:
@@ -16,40 +16,128 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Patch ReadingView
+      - name: Apply series theme treatment
+        shell: bash
         run: |
+          set -euo pipefail
           python3 <<'PY'
           from pathlib import Path
 
           p = Path('src/app/components/ReadingView.tsx')
           s = p.read_text(encoding='utf-8')
 
-          s = s.replace(
-              'import { useEffect, useState, useRef, type RefObject } from "react";',
-              'import { useEffect, useState, useRef, type RefObject, type CSSProperties } from "react";',
-              1,
-          )
-
-          marker = 'import { HotspotEditorPanel } from "./HotspotEditorPanel";\n'
-          resolver = 'import { resolveRepositoryRootAssetUrl } from "@/app/config/repository-assets";\n'
-          if resolver not in s:
-              s = s.replace(marker, marker + resolver, 1)
-
           helper_marker = 'const PageContent = ({\n'
-          if 'RARE_INSIGHTS_ARCHIVE_TITLE_ART' not in s:
-              helper = '''const RARE_INSIGHTS_ARCHIVE_TITLE_ART: Record<number, string> = {\n  97: resolveRepositoryRootAssetUrl("/series/rare-insights/a-day-in-a-life.png"),\n  99: resolveRepositoryRootAssetUrl("/series/rare-insights/charity-and-advocacy.png"),\n  101: resolveRepositoryRootAssetUrl("/series/rare-insights/industry-insights.png"),\n  103: resolveRepositoryRootAssetUrl("/series/rare-insights/editors-letters.png"),\n  105: resolveRepositoryRootAssetUrl("/series/rare-insights/medical.png"),\n  107: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),\n  108: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),\n  109: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),\n  113: resolveRepositoryRootAssetUrl("/series/rare-insights/patient-voice.png"),\n  115: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-caregiving.png"),\n  117: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-ramblings.png"),\n  119: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-rev-inar.png"),\n  121: resolveRepositoryRootAssetUrl("/series/rare-insights/reviews.png"),\n  123: resolveRepositoryRootAssetUrl("/series/rare-insights/science-and-tech.png"),\n  125: resolveRepositoryRootAssetUrl("/series/rare-insights/sunday-sessions.png"),\n  127: resolveRepositoryRootAssetUrl("/series/rare-insights/turning-the-tide.png"),\n  129: resolveRepositoryRootAssetUrl("/series/rare-insights/travel-series.png"),\n};\n\nconst rareInsightsBackgroundCache = new Map<string, string>();\n\nconst useRareInsightsTitleColor = (pageNumber: number) => {\n  const source = RARE_INSIGHTS_ARCHIVE_TITLE_ART[pageNumber] || "";\n  const [color, setColor] = useState<string | null>(() =>\n    source ? rareInsightsBackgroundCache.get(source) || null : null,\n  );\n\n  useEffect(() => {\n    if (!source) {\n      setColor(null);\n      return;\n    }\n\n    const cached = rareInsightsBackgroundCache.get(source);\n    if (cached) {\n      setColor(cached);\n      return;\n    }\n\n    let cancelled = false;\n    const image = new Image();\n    image.decoding = "async";\n    image.onload = () => {\n      if (cancelled) return;\n      try {\n        const canvas = document.createElement("canvas");\n        canvas.width = 20;\n        canvas.height = 20;\n        const ctx = canvas.getContext("2d", { willReadFrequently: true });\n        if (!ctx) return;\n        ctx.drawImage(image, 0, 0, 20, 20);\n        const data = ctx.getImageData(0, 0, 20, 20).data;\n        const groups = new Map<string, { n: number; r: number; g: number; b: number }>();\n        for (let y = 0; y < 20; y += 1) {\n          for (let x = 0; x < 20; x += 1) {\n            const i = (y * 20 + x) * 4;\n            if (data[i + 3] < 200) continue;\n            const edge = x < 4 || x > 15 || y < 4 || y > 15;\n            const weight = edge ? 4 : 1;\n            const r = data[i];\n            const g = data[i + 1];\n            const b = data[i + 2];\n            const key = [Math.round(r / 24), Math.round(g / 24), Math.round(b / 24)].join("-");\n            const group = groups.get(key) || { n: 0, r: 0, g: 0, b: 0 };\n            group.n += weight;\n            group.r += r * weight;\n            group.g += g * weight;\n            group.b += b * weight;\n            groups.set(key, group);\n          }\n        }\n        const best = Array.from(groups.values()).sort((a, b) => b.n - a.n)[0];\n        if (!best || !best.n) return;\n        const sampled = "rgb(" + Math.round(best.r / best.n) + ", " + Math.round(best.g / best.n) + ", " + Math.round(best.b / best.n) + ")";\n        rareInsightsBackgroundCache.set(source, sampled);\n        if (!cancelled) setColor(sampled);\n      } catch (error) {\n        console.warn("Could not sample title-page color", error);\n      }\n    };\n    image.src = source;\n    return () => { cancelled = true; };\n  }, [source]);\n\n  return color;\n};\n\n'''
+          if 'const SERIES_THEME_RULES' not in s:
+              helper = r'''type SeriesThemeRule = {
+  key: string;
+  color: string;
+};
+
+const SERIES_THEME_RULES = {
+  rareInsights: { key: "rare-insights", color: "#C99B38" },
+  peopleOfRare: { key: "people-of-rare", color: "#111111" },
+  digitalSpotlight: { key: "digital-spotlight", color: "#00AEEF" },
+  charityPartners: { key: "charity-partners", color: "#69B83E" },
+  rareReports: { key: "rare-reports", color: "#7650A4" },
+  resources: { key: "resources", color: "#169C9C" },
+} as const satisfies Record<string, SeriesThemeRule>;
+
+const getSeriesThemeRule = (page: MagazinePage): SeriesThemeRule | null => {
+  const identity = [page.id, page.layoutId, page.imageUrl, page.alt]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (
+    identity.includes("digital-spotlight") ||
+    identity.includes("digital spotlight")
+  ) {
+    return SERIES_THEME_RULES.digitalSpotlight;
+  }
+
+  if (
+    identity.includes("people-of-rare") ||
+    identity.includes("people of rare") ||
+    identity.includes("ceo-series") ||
+    identity.includes("ceo series") ||
+    identity.includes("patient-engagement") ||
+    identity.includes("patient engagement") ||
+    identity.includes("rare-entrepreneur") ||
+    identity.includes("rare entrepreneur")
+  ) {
+    return SERIES_THEME_RULES.peopleOfRare;
+  }
+
+  if (
+    identity.includes("charity-partners") ||
+    identity.includes("charity partners") ||
+    identity.includes("rare-charities")
+  ) {
+    return SERIES_THEME_RULES.charityPartners;
+  }
+
+  if (
+    identity.includes("rare-reports") ||
+    identity.includes("rare reports") ||
+    identity.includes("rare-siblings") ||
+    identity.includes("rare siblings") ||
+    identity.includes("bbs-report")
+  ) {
+    return SERIES_THEME_RULES.rareReports;
+  }
+
+  if (
+    identity.includes("resources") ||
+    identity.includes("rare resources")
+  ) {
+    return SERIES_THEME_RULES.resources;
+  }
+
+  if (
+    identity.includes("rare-insights") ||
+    identity.includes("rare insights") ||
+    Boolean(RARE_INSIGHTS_ARCHIVE_TITLE_ART[page.pageNumber])
+  ) {
+    return SERIES_THEME_RULES.rareInsights;
+  }
+
+  return null;
+};
+
+'''
+              if helper_marker not in s:
+                  raise SystemExit('PageContent marker not found')
               s = s.replace(helper_marker, helper + helper_marker, 1)
 
-          page_anchor = '  const isFullBleedSpreadPage = fullBleedSpreadPages.has(page.pageNumber);\n'
-          color_line = '  const rareInsightsTitleColor = useRareInsightsTitleColor(page.pageNumber);\n'
-          if color_line not in s:
-              s = s.replace(page_anchor, page_anchor + color_line, 1)
+          old_state = '''  const isFullBleedSpreadPage = fullBleedSpreadPages.has(page.pageNumber);\n  const rareInsightsTitleColor = useRareInsightsTitleColor(page.pageNumber);\n'''
+          new_state = '''  const isFullBleedSpreadPage = fullBleedSpreadPages.has(page.pageNumber);\n  const rareInsightsTitleColor = useRareInsightsTitleColor(page.pageNumber);\n  const seriesTheme = getSeriesThemeRule(page);\n  const isSeriesRightPage = page.pageNumber % 2 !== 0;\n'''
+          if new_state not in s:
+              if old_state not in s:
+                  raise SystemExit('Page state insertion point not found')
+              s = s.replace(old_state, new_state, 1)
 
-          old = '''    const LayoutComponent = LAYOUT_REGISTRY[page.layoutId];\n    return (\n      <LayoutComponent\n        page={page}\n        onNavigate={onNavigate}\n        isEditable={isEditable}\n        blocks={blocks}\n        onUpdateBlocks={onUpdateBlocks}\n      />\n    );\n'''
-          new = '''    const LayoutComponent = LAYOUT_REGISTRY[page.layoutId];\n    const layout = (\n      <LayoutComponent\n        page={page}\n        onNavigate={onNavigate}\n        isEditable={isEditable}\n        blocks={blocks}\n        onUpdateBlocks={onUpdateBlocks}\n      />\n    );\n\n    if (!rareInsightsTitleColor) return layout;\n\n    return (\n      <div\n        className="rare-insights-matched-background relative h-full w-full overflow-hidden"\n        style={{\n          backgroundColor: rareInsightsTitleColor,\n          "--rare-insights-title-color": rareInsightsTitleColor,\n        } as CSSProperties}\n      >\n        <style>{`.rare-insights-matched-background > div { background: var(--rare-insights-title-color) !important; }`}</style>\n        {layout}\n      </div>\n    );\n'''
-          if old not in s:
-              raise SystemExit('Expected layout block not found')
-          s = s.replace(old, new, 1)
+          old_layout = '''    if (!rareInsightsTitleColor) return layout;\n\n    return (\n      <div\n        className="rare-insights-matched-background relative h-full w-full overflow-hidden"\n        style={{\n          backgroundColor: rareInsightsTitleColor,\n          "--rare-insights-title-color": rareInsightsTitleColor,\n        } as CSSProperties}\n      >\n        <style>{`.rare-insights-matched-background > div { background: var(--rare-insights-title-color) !important; }`}</style>\n        {layout}\n      </div>\n    );\n'''
+
+          new_layout = '''    if (!seriesTheme && !rareInsightsTitleColor) return layout;\n\n    return (\n      <div\n        className={`series-themed-page relative h-full w-full overflow-hidden ${\n          isSeriesRightPage ? "series-right-page" : "series-left-page"\n        } ${rareInsightsTitleColor ? "rare-insights-matched-background" : ""}`}\n        data-series-theme={seriesTheme?.key}\n        style={{\n          backgroundColor: rareInsightsTitleColor || undefined,\n          "--rare-insights-title-color": rareInsightsTitleColor || undefined,\n          "--series-accent": seriesTheme?.color || undefined,\n        } as CSSProperties}\n      >\n        <style>{`\n          .rare-insights-matched-background > div {\n            background: var(--rare-insights-title-color) !important;\n          }\n          .series-themed-page * {\n            scrollbar-color: var(--series-accent) rgba(255,255,255,0.18) !important;\n          }\n          .series-themed-page *::-webkit-scrollbar-thumb {\n            background: var(--series-accent) !important;\n            border-color: transparent !important;\n          }\n          .series-themed-page *::-webkit-scrollbar-thumb:hover {\n            background: var(--series-accent) !important;\n          }\n          .series-themed-page.series-right-page .shrink-0 > p:first-of-type,\n          .series-themed-page.series-right-page header > p:first-of-type {\n            color: var(--series-accent) !important;\n          }\n        `}</style>\n        {layout}\n        {seriesTheme ? (\n          <div\n            className="pointer-events-none absolute bottom-0 left-0 right-0 z-[150] h-[10px]"\n            style={{ backgroundColor: seriesTheme.color }}\n            aria-hidden="true"\n          />\n        ) : null}\n      </div>\n    );\n'''
+
+          if new_layout not in s:
+              if old_layout not in s:
+                  raise SystemExit('Existing layout wrapper not found')
+              s = s.replace(old_layout, new_layout, 1)
+
+          old_static_root = '''    <div\n      ref={pageContainerRef}\n      className="relative w-full h-full overflow-hidden"\n      data-static-community-page={\n'''
+          new_static_root = '''    <div\n      ref={pageContainerRef}\n      className={`relative w-full h-full overflow-hidden ${\n        seriesTheme ? "series-themed-page" : ""\n      } ${seriesTheme && isSeriesRightPage ? "series-right-page" : ""}`}\n      data-series-theme={seriesTheme?.key}\n      style={{\n        "--series-accent": seriesTheme?.color || undefined,\n      } as CSSProperties}\n      data-static-community-page={\n'''
+          if new_static_root not in s:
+              if old_static_root not in s:
+                  raise SystemExit('Static page root not found')
+              s = s.replace(old_static_root, new_static_root, 1)
+
+          image_end_marker = '''      ) : null}\n      {page.watermarkUrl && (\n'''
+          image_end_replacement = '''      ) : null}\n      {seriesTheme ? (\n        <>\n          <style>{`\n            .series-themed-page * {\n              scrollbar-color: var(--series-accent) rgba(255,255,255,0.18) !important;\n            }\n            .series-themed-page *::-webkit-scrollbar-thumb {\n              background: var(--series-accent) !important;\n              border-color: transparent !important;\n            }\n            .series-themed-page.series-right-page .shrink-0 > p:first-of-type,\n            .series-themed-page.series-right-page header > p:first-of-type {\n              color: var(--series-accent) !important;\n            }\n          `}</style>\n          <div\n            className="pointer-events-none absolute bottom-0 left-0 right-0 z-[150] h-[10px]"\n            style={{ backgroundColor: seriesTheme.color }}\n            aria-hidden="true"\n          />\n        </>\n      ) : null}\n      {page.watermarkUrl && (\n'''
+          if image_end_replacement not in s:
+              if image_end_marker not in s:
+                  raise SystemExit('Static series bar insertion point not found')
+              s = s.replace(image_end_marker, image_end_replacement, 1)
 
           p.write_text(s, encoding='utf-8')
           PY
@@ -60,9 +148,15 @@ jobs:
           npm run build
 
       - name: Commit
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/app/components/ReadingView.tsx
-          git commit -m "Match RARE INSIGHTS archive pages to title colors"
+          if git diff --cached --quiet; then
+            echo "No code changes to commit."
+            exit 0
+          fi
+          git commit -m "Apply series color rule across magazine"
           git push origin main
