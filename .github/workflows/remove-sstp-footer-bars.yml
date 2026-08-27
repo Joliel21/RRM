@@ -1,0 +1,34 @@
+name: Remove SSTP footer bars
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/remove-sstp-footer-bars.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply SSTP footer removal
+        run: python3 .github/scripts/remove_sstp_footer_bars.py
+      - name: Validate build
+        run: |
+          npm ci
+          npm run build
+      - name: Commit SSTP footer removal
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/app/components/ReadingView.tsx src/app/components/MagazinePageLayouts.tsx
+          git commit -m "Remove generated footer bars from all SSTPs"
+          git restore . || true
+          git pull --rebase origin main
+          git push origin main
