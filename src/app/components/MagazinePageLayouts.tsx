@@ -24,6 +24,7 @@ import {
 
 import { resolveRepositoryAssetUrl, resolveRepositoryRootAssetUrl } from "@/app/config/repository-assets";
 import travelSeriesJoeRumneyImage from "@/assets/travel-series-joe-rumney.png";
+import { SeriesArticlePage } from "./SeriesArticlePage";
 
 const brandLogo = resolveRepositoryRootAssetUrl("/images/brand/rare-revolution-trademark-logo.png");
 
@@ -3498,154 +3499,6 @@ export const WhatsInsideRightPageLayout = ({
 };
 
 
-const A_DAY_IN_LIFE_ITEMS = [
-  {
-    "title": "The weight of stillness – a journey with dystonia: a first journal entry",
-    "date": "1 April 2026",
-    "url": "https://rarerevolutionmagazine.com/the-weight-of-stillness-a-journey-with-dystonia-a-first-journal-entry/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-ac30339e.png")
-  },
-  {
-    "title": "A day in the life: reconciling grief and gratitude",
-    "date": "17 December 2025",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-reconciling-grief-and-gratitude/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-fbcb23d3.png")
-  },
-  {
-    "title": "A day in the life: Vicky, Mum to Tiger-Lily",
-    "date": "3 December 2025",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-vicky-mum-to-tiger-lily/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-b8c2dc6a.png")
-  },
-  {
-    "title": "A Day in the Life: living with sickle cell anaemia-Naomi’s story",
-    "date": "23 October 2024",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-living-with-sickle-cell-anaemia-naomis-story/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-1b37ffdf.png")
-  },
-  {
-    "title": "A day in the life of a PSPA helpline manager",
-    "date": "14 October 2024",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-of-a-pspa-helpline-manager/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-1c807df5.png")
-  },
-  {
-    "title": "Drunk or disabled? – challenges with ataxia",
-    "date": "16 September 2024",
-    "url": "https://rarerevolutionmagazine.com/drunk-or-disabled-challenges-with-ataxia/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-2b90dcde.png")
-  },
-  {
-    "title": "#JosiahStrong: Living with familial cold autoinflammatory syndrome—one year on",
-    "date": "14 August 2024",
-    "url": "https://rarerevolutionmagazine.com/josiahstrong-living-with-familial-cold-autoinflammatory-syndrome-one-year-on/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-6ec21bb2.png")
-  },
-  {
-    "title": "If you’re not dancing, something is wrong…",
-    "date": "1 May 2024",
-    "url": "https://rarerevolutionmagazine.com/if-youre-not-dancing-something-is-wrong/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-4e04e52c.png")
-  },
-  {
-    "title": "A day in the life: living with dyskeratosis congenita (DC)—Paula’s story",
-    "date": "19 April 2024",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-living-with-dyskeratosis-congenita-dc-paulas-story/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-e618a3aa.png")
-  },
-  {
-    "title": "A day in the life: living with Bardet-Biedl syndrome—Tessa’s story",
-    "date": "16 February 2024",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-living-with-bardet-biedl-syndrome-tessas-story/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-7449b9d2.png")
-  },
-  {
-    "title": "Don’t let your condition define you! David’s journey with stiff person syndrome",
-    "date": "14 February 2024",
-    "url": "https://rarerevolutionmagazine.com/davids-journey-with-stiff-person-syndrome/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-f7d202ae.png")
-  },
-  {
-    "title": "A day in the life: a medically complex condition that is as unpredictable as the weather",
-    "date": "29 November 2023",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-a-medically-complex-condition-that-is-as-unpredictable-as-the-weather/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-e2bebbb2.png")
-  },
-  {
-    "title": "A day in the life: navigating our way through the labyrinth of a newly discovered disease",
-    "date": "9 October 2023",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-navigating-our-way-through-the-labyrinth-of-a-newly-discovered-disease/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-8ad0118b.png")
-  },
-  {
-    "title": "A day in the life: a glimpse into my life living with scleroderma",
-    "date": "15 September 2023",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-a-glimpse-into-my-life-living-with-scleroderma/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-f1772b64.png")
-  },
-  {
-    "title": "A day in the life: graduation day for Raymond Huml’s son, Jon",
-    "date": "25 July 2023",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-graduation-day-for-raymond-humls-son-jon/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-1b5cb7a6.png")
-  },
-  {
-    "title": "A day in the life: Josiah’s diagnosis with familial cold autoinflammatory syndrome",
-    "date": "28 June 2023",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-josiahs-diagnosis-with-familial-cold-autoinflammatory-syndrome/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-f41a9cb2.png")
-  },
-  {
-    "title": "A day in the life: Cathy Moughton, PSPA helpline care navigator",
-    "date": "24 May 2023",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-cathy-moughton-pspa-helpline-care-navigator/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-1045279c.png")
-  },
-  {
-    "title": "A day in the life with hypokalemic periodic paralysis: Ralph Berthiaume",
-    "date": "1 May 2023",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-with-hypokalemic-periodic-paralysis-ralph-berthiaume/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-cc1b8866.png")
-  },
-  {
-    "title": "A day in the life with Behcet’s disease: Pamela Price",
-    "date": "29 March 2023",
-    "url": "https://rarerevolutionmagazine.com/a-day-in-the-life-with-behcets-disease-pamela-price/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-58bd1f01.png")
-  },
-  {
-    "title": "My year at RARE Youth Revolution",
-    "date": "26 January 2022",
-    "url": "https://rarerevolutionmagazine.com/my-year-at-rare-youth-revolution/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-2eccdb57.png")
-  },
-  {
-    "title": "Realising our workplace vision",
-    "date": "6 October 2021",
-    "url": "https://rarerevolutionmagazine.com/realising-our-workplace-vision-2/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-c18012e6.png")
-  },
-  {
-    "title": "RARE Employment Q&A with Police Inspector David Singleton",
-    "date": "6 October 2021",
-    "url": "https://rarerevolutionmagazine.com/rare-employment-qa-with-police-inspector-david-singleton-2/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-e92fa320.png")
-  },
-  {
-    "title": "Professional careers and rare disease – finding a balance that works",
-    "date": "6 October 2021",
-    "url": "https://rarerevolutionmagazine.com/professional-careers-and-rare-disease-finding-a-balance-that-works-2/",
-    "image": resolveRepositoryAssetUrl("/images/a-day-in-life/a-day-in-the-life-b8a16f68.png")
-  }
-] as const;
-
-const shortenDayInLifeTitle = (title: string, maxLength = 58) => {
-  if (title.length <= maxLength) return title;
-  const shortened = title.slice(0, maxLength - 3).replace(/\s+\S*$/, "");
-  return `${shortened}...`;
-};
-
-
 type EditorialTeamMember = {
   name: string;
   role: string;
@@ -4107,80 +3960,11 @@ const SERIES_ARCHIVE_BODY_CLASS =
   "flex h-[80px] min-h-[80px] max-h-[80px] flex-col overflow-hidden px-3 pb-3 pt-2.5";
 
 const ADayInLifeScrollLayout = () => (
-  <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#f4f9fb] text-[#17384b]">
-    <style>{`
-      .day-life-scroll {
-        scrollbar-width: thin;
-        scrollbar-color: #2b9bc0 #e6f0f3;
-      }
-      .day-life-scroll::-webkit-scrollbar {
-        width: 8px;
-      }
-      .day-life-scroll::-webkit-scrollbar-track {
-        background: #e6f0f3;
-        border-radius: 999px;
-      }
-      .day-life-scroll::-webkit-scrollbar-thumb {
-        background: #2b9bc0;
-        border: 2px solid #e6f0f3;
-        border-radius: 999px;
-      }
-      .day-life-scroll::-webkit-scrollbar-thumb:hover {
-        background: #207f9f;
-      }
-    `}</style>
-
-    <div className="shrink-0 border-b border-[#d5e7ed] bg-white px-8 pb-5 pt-7">
-      <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.27em] text-[#2b9bc0]">
-        A Day in the Life
-      </p>
-      <h2 className="text-[28px] font-light leading-none tracking-[-0.035em] text-[#222d33]">
-        Explore the series
-      </h2>
-      <p className="mt-2 text-[11px] text-[#54707d]">
-        {A_DAY_IN_LIFE_ITEMS.length} personal perspectives from everyday rare life
-      </p>
-    </div>
-
-    <div
-      className="day-life-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5"
-      onWheel={(event) => event.stopPropagation()}
-      onTouchMove={(event) => event.stopPropagation()}
-      aria-label="Scrollable gallery of A Day in the Life articles"
-    >
-      <div className={SERIES_ARCHIVE_GRID_CLASS}>
-        {A_DAY_IN_LIFE_ITEMS.map((item, index) => (
-          <a
-            key={item.url}
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={item.title}
-            aria-label={`Open ${item.title} in a new tab`}
-            className={`${SERIES_ARCHIVE_CARD_CLASS} border-[#d5e7ed] bg-white no-underline shadow-[0_2px_10px_rgba(20,60,75,0.07)] transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2b9bc0]`}
-          >
-            <div className={`${SERIES_ARCHIVE_IMAGE_FRAME_CLASS} bg-[#edf4f6] p-1`}>
-              <img
-                src={item.image}
-                alt=""
-                className={SERIES_ARCHIVE_IMAGE_CLASS}
-                loading={index < 4 ? "eager" : "lazy"}
-                draggable={false}
-              />
-            </div>
-            <div className={SERIES_ARCHIVE_BODY_CLASS}>
-              <span className="mb-1.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-[#2b9bc0]">
-                A Day in the Life
-              </span>
-              <h3 className="text-[11px] font-semibold leading-[1.28] text-[#203b48]">
-                {shortenDayInLifeTitle(item.title)}
-              </h3>
-            </div>
-          </a>
-        ))}
-      </div>
-    </div>
-  </div>
+  <SeriesArticlePage
+    sourcePath="/series/rare-insights/a-day-in-a-life/articles.json"
+    fallbackSeriesName="A Day in the Life"
+    ariaLabel="Scrollable gallery of A Day in the Life articles"
+  />
 );
 
 const CHARITY_ADVOCACY_URL =

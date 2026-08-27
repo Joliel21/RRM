@@ -8,7 +8,10 @@
       "order": 1,
       "type": "section-divider",
       "name": "RARE INSIGHTS",
-      "printedPages": [96, 97],
+      "printedPages": [
+        96,
+        97
+      ],
       "asset": "series/rare-insights/rare-insights-spread-title-page.png"
     },
     {
@@ -17,7 +20,9 @@
       "name": "A Day in the Life",
       "printedPage": 98,
       "asset": "series/rare-insights/a-day-in-a-life.png",
-      "slug": "a-day-in-a-life"
+      "slug": "a-day-in-a-life",
+      "articlesFile": "series/rare-insights/a-day-in-a-life/articles.json",
+      "articlePageRenderer": "data-driven"
     },
     {
       "order": 3,

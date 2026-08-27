@@ -37,4 +37,4 @@ Title-page artwork remains static. Clickable behavior belongs in the magazine HT
 
 ## Migration status
 
-Step 4 establishes the canonical structure only. Article inventories and article-level metadata are handled in the next metadata migration step. No article metadata should be described as migrated until it has actually been verified and written to the appropriate series inventory.
+A Day in the Life is the first migrated, data-driven AP and reads from `a-day-in-a-life/articles.json`. Other series remain pending migration until their verified article inventories are created and connected to the reusable AP renderer.
