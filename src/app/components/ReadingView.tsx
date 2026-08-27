@@ -446,6 +446,24 @@ const PageContent = ({
           .series-themed-page.series-article-page [class*="overflow-y-auto"],
           .series-themed-page.series-article-page [class*="overscroll-contain"] {
             background: var(--series-accent) !important;
+            scrollbar-color: #000000 rgba(255,255,255,0.28) !important;
+          }
+          .series-themed-page.series-article-page [class*="overflow-y-auto"]::-webkit-scrollbar-thumb,
+          .series-themed-page.series-article-page [class*="overscroll-contain"]::-webkit-scrollbar-thumb {
+            background: #000000 !important;
+            border-color: transparent !important;
+          }
+          .series-themed-page.series-article-page [class*="overflow-y-auto"]::-webkit-scrollbar-button,
+          .series-themed-page.series-article-page [class*="overscroll-contain"]::-webkit-scrollbar-button {
+            background-color: #000000 !important;
+          }
+          .series-themed-page.series-article-page [class*="overflow-y-auto"]::-webkit-scrollbar-button:single-button:vertical:decrement,
+          .series-themed-page.series-article-page [class*="overscroll-contain"]::-webkit-scrollbar-button:single-button:vertical:decrement {
+            background-color: #000000 !important;
+          }
+          .series-themed-page.series-article-page [class*="overflow-y-auto"]::-webkit-scrollbar-button:single-button:vertical:increment,
+          .series-themed-page.series-article-page [class*="overscroll-contain"]::-webkit-scrollbar-button:single-button:vertical:increment {
+            background-color: #000000 !important;
           }
         `}</style>
         {layout}
