@@ -342,6 +342,21 @@ const isSeriesTitleSpread = (page: MagazinePage) => {
   );
 };
 
+const isArticlePage = (page: MagazinePage) => {
+  const layoutId = String(page.layoutId || "").toLowerCase();
+  const identity = getPageIdentity(page);
+
+  return (
+    layoutId.includes("archive") ||
+    layoutId.includes("scroll") ||
+    layoutId.includes("quarter") ||
+    layoutId.includes("middle") ||
+    layoutId.includes("final") ||
+    layoutId === "editors-letters-right" ||
+    identity.includes("article-page")
+  );
+};
+
 const PageContent = ({
   page,
   onNavigate,
@@ -373,6 +388,7 @@ const PageContent = ({
   const isSeriesTitleSpreadPage = isSeriesTitleSpread(page);
   const isMajorSeriesCoverSpreadPage = isMajorSeriesCoverSpread(page);
   const isRareInsightsSeriesPage = seriesTheme?.key === "rare-insights";
+  const isArticlePageView = isArticlePage(page);
   const isSeriesRightPage = page.pageNumber % 2 !== 0;
 
   if (
@@ -398,7 +414,9 @@ const PageContent = ({
       <div
         className={`series-themed-page relative h-full w-full overflow-hidden ${
           isSeriesRightPage ? "series-right-page" : "series-left-page"
-        } ${rareInsightsTitleColor ? "rare-insights-matched-background" : ""}`}
+        } ${isArticlePageView ? "series-article-page" : ""} ${
+          rareInsightsTitleColor ? "rare-insights-matched-background" : ""
+        }`}
         data-series-theme={seriesTheme?.key}
         style={{
           backgroundColor: rareInsightsTitleColor || undefined,
@@ -424,6 +442,10 @@ const PageContent = ({
           .series-themed-page.series-right-page .shrink-0 > p:first-of-type,
           .series-themed-page.series-right-page header > p:first-of-type {
             color: var(--series-accent) !important;
+          }
+          .series-themed-page.series-article-page [class*="overflow-y-auto"],
+          .series-themed-page.series-article-page [class*="overscroll-contain"] {
+            background: var(--series-accent) !important;
           }
         `}</style>
         {layout}
