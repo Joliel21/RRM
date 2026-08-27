@@ -39,13 +39,26 @@ For RARE INSIGHTS SSTPs, including pages such as **A Day in the Life**, the appr
 
 Article pages are the article/archive/gallery/content pages associated with a sub-series. They keep the applicable series-color styling, including the approved footer treatment for that series.
 
-For RARE INSIGHTS APs, the footer treatment is the RARE INSIGHTS gold bar unless explicitly changed.
+**The background directly behind the article cards/listings on an AP must use that major series' color. Do not recolor the entire page.**
+
+The AP header/title area remains as designed, and the article cards themselves remain as designed. Only the article browsing/content field behind the cards uses the series color.
+
+Examples:
+
+- RARE INSIGHTS AP article field: gold
+- People of Rare AP article field: black
+- Digital Spotlight AP article field: bright blue
+- Charity Partners AP article field: bright green
+- RARE Reports AP article field: purple
+- Resources AP article field: teal
+
+For RARE INSIGHTS APs, the footer treatment remains the RARE INSIGHTS gold bar unless explicitly changed.
 
 This distinction is permanent unless explicitly changed:
 
 - **SCS / Series Cover Spread:** no generated footer bar.
 - **SSTP / Sub-Series Title Page:** keep the series-color footer bar.
-- **AP / Article Page:** keep the applicable series-color footer treatment.
+- **AP / Article Page:** keep the applicable series-color footer treatment and use the series color behind the articles only.
 
 ## Interior and sub-series pages
 
