@@ -34,3 +34,5 @@ jobs:
           git restore . || true
           git pull --rebase origin main
           git push origin main
+
+# retry: fixed source-edit ordering
