@@ -1,0 +1,36 @@
+name: Migrate A Day in the Life AP
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/migrate-a-day-in-life-ap.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Migrate A Day in the Life AP
+        run: python3 .github/scripts/migrate_a_day_in_life_ap.py
+      - name: Validate article JSON
+        run: python3 -m json.tool magazine-source/public/series/rare-insights/a-day-in-a-life/articles.json > /dev/null
+      - name: Validate production build
+        run: |
+          npm ci
+          npm run build
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/app/components/MagazinePageLayouts.tsx src/app/components/SeriesArticlePage.tsx magazine-source/public/series/rare-insights/manifest.json magazine-source/public/series/rare-insights/README.md magazine-source/public/series/rare-insights/a-day-in-a-life/articles.json
+          git commit -m "Make A Day in the Life AP data-driven"
+          git restore . || true
+          git pull --rebase origin main
+          git push origin main
