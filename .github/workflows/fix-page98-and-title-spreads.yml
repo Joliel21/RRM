@@ -1,0 +1,30 @@
+name: Fix page 98 and title spreads
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/fix-page98-and-title-spreads.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply fixes
+        run: python3 .github/scripts/fix_page98_and_title_spreads.py
+      - name: Validate build
+        run: |
+          npm ci
+          npm run build
+      - name: Commit fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/app/components/ReadingView.tsx
+          git commit -m "Fix page 98 copy and title spread bars"
+          git push origin main
