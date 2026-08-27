@@ -330,7 +330,9 @@ const isSeriesTitleSpread = (page: MagazinePage) => {
     "rare-charities-spread",
     "resources-spread-page",
     "series-cover/resources.png",
-  ].some((token) => identity.includes(token));
+  ].some((token) => identity.includes(token)) ||
+    identity.includes("intro-page") ||
+    identity.includes("title-page");
 };
 
 const PageContent = ({
@@ -418,7 +420,7 @@ const PageContent = ({
         {layout}
         {seriesTheme && !isSeriesTitleSpreadPage ? (
           <div
-            className="pointer-events-none absolute bottom-0 left-0 right-0 z-[150] h-[10px]"
+            className="pointer-events-none absolute bottom-0 left-0 right-0 z-[9999] h-[10px]"
             style={{ backgroundColor: seriesTheme.color }}
             aria-hidden="true"
           />
@@ -493,9 +495,9 @@ const PageContent = ({
         <div
           className="pointer-events-none absolute z-[140] overflow-hidden"
           style={{
-            left: "9.5%",
-            right: "7.5%",
-            top: "55.7%",
+            left: "7%",
+            right: "5.5%",
+            top: "55.2%",
             bottom: "6.8%",
             background: "#f9f8f5",
             color: "#222222",
@@ -505,13 +507,13 @@ const PageContent = ({
           <div
             className="grid h-full"
             style={{
-              gridTemplateColumns: "52% 48%",
-              fontSize: "15px",
-              lineHeight: 1.36,
+              gridTemplateColumns: "55% 45%",
+              fontSize: "10px",
+              lineHeight: 1.4,
             }}
           >
-            <div className="flex h-full flex-col" style={{ paddingRight: "24px" }}>
-              <p style={{ margin: 0, marginBottom: "14px" }}>
+            <div className="flex h-full flex-col" style={{ paddingRight: "16px" }}>
+              <p style={{ margin: 0, marginBottom: "9px" }}>
                 First-person accounts from people living with rare conditions, family members, caregivers, advocates and professionals.
               </p>
               <p style={{ margin: 0 }}>
@@ -519,12 +521,12 @@ const PageContent = ({
               </p>
               <div
                 style={{
-                  marginTop: "14px",
+                  marginTop: "9px",
                   borderTop: "2px solid #C99B38",
-                  paddingTop: "12px",
+                  paddingTop: "8px",
                   color: "#C99B38",
                   fontFamily: "Georgia, 'Times New Roman', serif",
-                  fontSize: "22px",
+                  fontSize: "16px",
                   fontWeight: 700,
                   lineHeight: 1.08,
                 }}
@@ -536,13 +538,13 @@ const PageContent = ({
             <div
               style={{
                 borderLeft: "2px solid #C99B38",
-                paddingLeft: "30px",
+                paddingLeft: "20px",
               }}
             >
-              <p style={{ margin: 0, marginBottom: "14px" }}>
+              <p style={{ margin: 0, marginBottom: "9px" }}>
                 They reveal the practical challenges, difficult decisions, unexpected adaptations and meaningful moments that clinical descriptions often leave out.
               </p>
-              <p style={{ margin: 0, marginBottom: "14px" }}>
+              <p style={{ margin: 0, marginBottom: "9px" }}>
                 By centering the voices of those directly affected, A Day in the Life shows the person beyond the condition and the full life surrounding it.
               </p>
               <p style={{ margin: 0 }}>
@@ -569,7 +571,7 @@ const PageContent = ({
       }
     `}</style>
     <div
-      className="static-series-bottom-bar pointer-events-none absolute bottom-0 left-0 right-0 z-[150] h-[10px]"
+      className="static-series-bottom-bar pointer-events-none absolute bottom-0 left-0 right-0 z-[9999] h-[10px]"
       style={{ backgroundColor: seriesTheme.color }}
       aria-hidden="true"
     />
