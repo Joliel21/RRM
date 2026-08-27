@@ -1,0 +1,240 @@
+name: Match RARE INSIGHTS archive colors
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/match-rare-insights-archive-colors.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out RRM
+        uses: actions/checkout@v4
+
+      - name: Match archive backgrounds to title pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/app/components/ReadingView.tsx')
+          text = path.read_text(encoding='utf-8')
+
+          old_import = 'import { useEffect, useState, useRef, type RefObject } from "react";'
+          new_import = 'import { useEffect, useState, useRef, type RefObject, type CSSProperties } from "react";'
+          if old_import in text:
+              text = text.replace(old_import, new_import, 1)
+
+          resolver_import = 'import { resolveRepositoryRootAssetUrl } from "@/app/config/repository-assets";\n'
+          anchor_import = 'import { HotspotEditorPanel } from "./HotspotEditorPanel";\n'
+          if resolver_import not in text:
+              if anchor_import not in text:
+                  raise SystemExit('Could not find import insertion anchor')
+              text = text.replace(anchor_import, anchor_import + resolver_import, 1)
+
+          helper_anchor = 'const PageContent = ({\n'
+          if 'const SERIES_TITLE_BACKGROUND_BY_ARCHIVE_PAGE' not in text:
+              helper = r'''const SERIES_TITLE_BACKGROUND_BY_ARCHIVE_PAGE: Record<number, string> = {
+  97: resolveRepositoryRootAssetUrl("/series/rare-insights/a-day-in-a-life.png"),
+  99: resolveRepositoryRootAssetUrl("/series/rare-insights/charity-and-advocacy.png"),
+  101: resolveRepositoryRootAssetUrl("/series/rare-insights/industry-insights.png"),
+  103: resolveRepositoryRootAssetUrl("/series/rare-insights/editors-letters.png"),
+  105: resolveRepositoryRootAssetUrl("/series/rare-insights/medical.png"),
+  107: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),
+  108: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),
+  109: resolveRepositoryRootAssetUrl("/series/rare-insights/news-and-press-releases.png"),
+  113: resolveRepositoryRootAssetUrl("/series/rare-insights/patient-voice.png"),
+  115: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-caregiving.png"),
+  117: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-ramblings.png"),
+  119: resolveRepositoryRootAssetUrl("/series/rare-insights/rare-rev-inar.png"),
+  121: resolveRepositoryRootAssetUrl("/series/rare-insights/reviews.png"),
+  123: resolveRepositoryRootAssetUrl("/series/rare-insights/science-and-tech.png"),
+  125: resolveRepositoryRootAssetUrl("/series/rare-insights/sunday-sessions.png"),
+  // Internal page 127 is displayed as page 129 and is already the approved example.
+  129: resolveRepositoryRootAssetUrl("/series/rare-insights/travel-series.png"),
+};
+
+const seriesTitleBackgroundColorCache = new Map<string, string>();
+
+const useSeriesTitleBackgroundColor = (pageNumber: number) => {
+  const source = SERIES_TITLE_BACKGROUND_BY_ARCHIVE_PAGE[pageNumber] || "";
+  const [backgroundColor, setBackgroundColor] = useState<string | null>(() =>
+    source ? seriesTitleBackgroundColorCache.get(source) || null : null,
+  );
+
+  useEffect(() => {
+    if (!source) {
+      setBackgroundColor(null);
+      return;
+    }
+
+    const cached = seriesTitleBackgroundColorCache.get(source);
+    if (cached) {
+      setBackgroundColor(cached);
+      return;
+    }
+
+    let cancelled = false;
+    const image = new Image();
+    image.decoding = "async";
+    image.crossOrigin = "anonymous";
+
+    image.onload = () => {
+      if (cancelled) return;
+
+      try {
+        const sampleSize = 24;
+        const canvas = document.createElement("canvas");
+        canvas.width = sampleSize;
+        canvas.height = sampleSize;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context) return;
+
+        context.drawImage(image, 0, 0, sampleSize, sampleSize);
+        const pixels = context.getImageData(0, 0, sampleSize, sampleSize).data;
+        const buckets = new Map<
+          string,
+          { score: number; red: number; green: number; blue: number; weight: number }
+        >();
+
+        for (let y = 0; y < sampleSize; y += 1) {
+          for (let x = 0; x < sampleSize; x += 1) {
+            const offset = (y * sampleSize + x) * 4;
+            const alpha = pixels[offset + 3];
+            if (alpha < 200) continue;
+
+            const red = pixels[offset];
+            const green = pixels[offset + 1];
+            const blue = pixels[offset + 2];
+            const isEdge = x < 4 || x >= sampleSize - 4 || y < 4 || y >= sampleSize - 4;
+            const weight = isEdge ? 4 : 1;
+            const key = `${Math.round(red / 32)}-${Math.round(green / 32)}-${Math.round(blue / 32)}`;
+            const bucket = buckets.get(key) || {
+              score: 0,
+              red: 0,
+              green: 0,
+              blue: 0,
+              weight: 0,
+            };
+
+            bucket.score += weight;
+            bucket.red += red * weight;
+            bucket.green += green * weight;
+            bucket.blue += blue * weight;
+            bucket.weight += weight;
+            buckets.set(key, bucket);
+          }
+        }
+
+        const dominant = Array.from(buckets.values()).sort(
+          (a, b) => b.score - a.score,
+        )[0];
+        if (!dominant || !dominant.weight) return;
+
+        const color = `rgb(${Math.round(dominant.red / dominant.weight)}, ${Math.round(
+          dominant.green / dominant.weight,
+        )}, ${Math.round(dominant.blue / dominant.weight)})`;
+
+        seriesTitleBackgroundColorCache.set(source, color);
+        if (!cancelled) setBackgroundColor(color);
+      } catch (error) {
+        console.warn("Could not sample RARE INSIGHTS title-page background.", error);
+      }
+    };
+
+    image.src = source;
+    return () => {
+      cancelled = true;
+    };
+  }, [source]);
+
+  return backgroundColor;
+};
+
+'''
+              if helper_anchor not in text:
+                  raise SystemExit('Could not find PageContent insertion anchor')
+              text = text.replace(helper_anchor, helper + helper_anchor, 1)
+
+          color_anchor = '  const isFullBleedSpreadPage = fullBleedSpreadPages.has(page.pageNumber);\n'
+          color_line = '  const matchedSeriesBackgroundColor = useSeriesTitleBackgroundColor(page.pageNumber);\n'
+          if color_line not in text:
+              if color_anchor not in text:
+                  raise SystemExit('Could not find page color insertion anchor')
+              text = text.replace(color_anchor, color_anchor + color_line, 1)
+
+          old_layout = '''    const LayoutComponent = LAYOUT_REGISTRY[page.layoutId];
+    return (
+      <LayoutComponent
+        page={page}
+        onNavigate={onNavigate}
+        isEditable={isEditable}
+        blocks={blocks}
+        onUpdateBlocks={onUpdateBlocks}
+      />
+    );
+'''
+          new_layout = '''    const LayoutComponent = LAYOUT_REGISTRY[page.layoutId];
+    const layoutContent = (
+      <LayoutComponent
+        page={page}
+        onNavigate={onNavigate}
+        isEditable={isEditable}
+        blocks={blocks}
+        onUpdateBlocks={onUpdateBlocks}
+      />
+    );
+
+    if (!matchedSeriesBackgroundColor) {
+      return layoutContent;
+    }
+
+    return (
+      <div
+        className="series-title-color-page relative h-full w-full overflow-hidden"
+        style={{
+          backgroundColor: matchedSeriesBackgroundColor,
+          "--series-title-page-background": matchedSeriesBackgroundColor,
+        } as CSSProperties}
+      >
+        <style>{`
+          .series-title-color-page > div {
+            background: var(--series-title-page-background) !important;
+          }
+        `}</style>
+        {layoutContent}
+      </div>
+    );
+'''
+          if new_layout not in text:
+              if old_layout not in text:
+                  raise SystemExit('Could not find layout return block')
+              text = text.replace(old_layout, new_layout, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Validate build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Commit archive color matching
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/app/components/ReadingView.tsx
+          if git diff --cached --quiet; then
+            echo "No code changes to commit."
+            exit 0
+          fi
+          git commit -m "Match RARE INSIGHTS archive pages to title colors"
+          git push origin main
