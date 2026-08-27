@@ -1,0 +1,30 @@
+name: Apply black AP scrollbars
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-black-ap-scrollbars.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply black AP scrollbars
+        run: python3 .github/scripts/apply_black_ap_scrollbars.py
+      - name: Validate build
+        run: |
+          npm ci
+          npm run build
+      - name: Commit AP scrollbar rule
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/app/components/ReadingView.tsx
+          git commit -m "Make AP scrollbars black"
+          git push origin main
