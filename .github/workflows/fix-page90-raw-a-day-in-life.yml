@@ -1,0 +1,34 @@
+name: Fix page 90 raw A Day in the Life
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/fix-page90-raw-a-day-in-life.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply page 90 raw asset fix
+        run: python3 .github/scripts/fix_page90_raw_a_day_in_life.py
+      - name: Validate build
+        run: |
+          npm ci
+          npm run build
+      - name: Commit page 90 fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/app/App.tsx src/app/components/ReadingView.tsx
+          git commit -m "Render page 90 from raw A Day in the Life asset"
+          git restore . || true
+          git pull --rebase origin main
+          git push origin main
