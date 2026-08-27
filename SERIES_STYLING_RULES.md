@@ -31,9 +31,9 @@ If a future major series cover spread is added, it should follow the same rule u
 
 A sub-series title page is **not** a major series cover spread.
 
-**SSTPs keep the series-color footer bar. Do not remove it.**
+**Do not add a generated bottom colored bar to any SSTP.**
 
-For RARE INSIGHTS SSTPs, including pages such as **A Day in the Life**, the approved footer is the RARE INSIGHTS gold bar. The bar should remain full-width at the bottom of the page.
+This rule applies to every sub-series title page across all major series, including RARE INSIGHTS SSTPs such as **A Day in the Life**.
 
 ## Article pages (AP)
 
@@ -54,18 +54,16 @@ Examples:
 
 **All AP scrollbars are black, regardless of series color.** This includes the scrollbar thumb and the scrollbar arrow buttons. The scrollbar track may remain neutral so the black controls stay visible.
 
-For RARE INSIGHTS APs, the footer treatment remains the RARE INSIGHTS gold bar unless explicitly changed.
+APs keep the applicable series-color bottom bar unless explicitly changed.
 
 This distinction is permanent unless explicitly changed:
 
 - **SCS / Series Cover Spread:** no generated footer bar.
-- **SSTP / Sub-Series Title Page:** keep the series-color footer bar.
+- **SSTP / Sub-Series Title Page:** no generated footer bar.
 - **AP / Article Page:** keep the applicable series-color footer treatment, use the series color behind the articles only, and use black scrollbar controls.
 
 ## Interior and sub-series pages
 
-Generated series styling belongs on the pages inside a series and on approved SSTPs/APs, not on the major series cover spread.
+Generated series footer styling belongs on approved APs, not on SCS or SSTP pages.
 
-For RARE INSIGHTS, approved sub-series title and article pages use the gold footer treatment established for that section.
-
-Do not infer that the footer rule for SSTPs or APs also applies to the major series cover/divider artwork.
+Do not infer that the AP footer rule applies to a series cover spread or a sub-series title page.
