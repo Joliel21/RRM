@@ -52,13 +52,15 @@ Examples:
 - RARE Reports AP article field: purple
 - Resources AP article field: teal
 
+**All AP scrollbars are black, regardless of series color.** This includes the scrollbar thumb and the scrollbar arrow buttons. The scrollbar track may remain neutral so the black controls stay visible.
+
 For RARE INSIGHTS APs, the footer treatment remains the RARE INSIGHTS gold bar unless explicitly changed.
 
 This distinction is permanent unless explicitly changed:
 
 - **SCS / Series Cover Spread:** no generated footer bar.
 - **SSTP / Sub-Series Title Page:** keep the series-color footer bar.
-- **AP / Article Page:** keep the applicable series-color footer treatment and use the series color behind the articles only.
+- **AP / Article Page:** keep the applicable series-color footer treatment, use the series color behind the articles only, and use black scrollbar controls.
 
 ## Interior and sub-series pages
 
