@@ -364,6 +364,7 @@ const PageContent = ({
   const rareInsightsTitleColor = useRareInsightsTitleColor(page);
   const seriesTheme = getSeriesThemeRule(page);
   const isSeriesTitleSpreadPage = isSeriesTitleSpread(page);
+  const isRareInsightsSeriesPage = seriesTheme?.key === "rare-insights";
   const isSeriesRightPage = page.pageNumber % 2 !== 0;
 
   if (
@@ -418,10 +419,13 @@ const PageContent = ({
           }
         `}</style>
         {layout}
-        {seriesTheme && !isSeriesTitleSpreadPage ? (
+        {seriesTheme && (isRareInsightsSeriesPage || !isSeriesTitleSpreadPage) ? (
           <div
-            className="pointer-events-none absolute bottom-0 left-0 right-0 z-[9999] h-[10px]"
-            style={{ backgroundColor: seriesTheme.color }}
+            className="pointer-events-none absolute bottom-0 left-0 right-0 z-[9999]"
+            style={{
+              backgroundColor: seriesTheme.color,
+              height: isRareInsightsSeriesPage ? "4.4%" : "10px",
+            }}
             aria-hidden="true"
           />
         ) : null}
@@ -555,7 +559,7 @@ const PageContent = ({
         </div>
       ) : null}
 
-{seriesTheme && !isSeriesTitleSpreadPage ? (
+{seriesTheme && (isRareInsightsSeriesPage || !isSeriesTitleSpreadPage) ? (
   <>
     <style>{`
       .series-themed-page * {
@@ -571,8 +575,11 @@ const PageContent = ({
       }
     `}</style>
     <div
-      className="static-series-bottom-bar pointer-events-none absolute bottom-0 left-0 right-0 z-[9999] h-[10px]"
-      style={{ backgroundColor: seriesTheme.color }}
+      className="static-series-bottom-bar pointer-events-none absolute bottom-0 left-0 right-0 z-[9999]"
+      style={{
+        backgroundColor: seriesTheme.color,
+        height: isRareInsightsSeriesPage ? "4.4%" : "10px",
+      }}
       aria-hidden="true"
     />
   </>
