@@ -1,0 +1,35 @@
+name: Package data-driven AP template
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/package-data-driven-ap.yml
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build AP template ZIP
+        run: |
+          mkdir -p package
+          cp --parents DATA_DRIVEN_AP_GUIDE.md SERIES_STYLING_RULES.md package/
+          cp --parents src/app/components/SeriesArticlePage.tsx src/app/components/MagazinePageLayouts.tsx package/
+          cp --parents magazine-source/public/series/rare-insights/manifest.json magazine-source/public/series/rare-insights/schema.json magazine-source/public/series/rare-insights/README.md package/
+          cp --parents magazine-source/public/series/rare-insights/a-day-in-a-life/articles.json package/
+          cp --parents series/rare-insights/a-day-in-a-life.png package/
+          if [ -d magazine-source/public/images/a-day-in-life ]; then
+            cp -r --parents magazine-source/public/images/a-day-in-life package/
+          fi
+          cd package
+          zip -r ../RRM_Data_Driven_AP_Template.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RRM_Data_Driven_AP_Template
+          path: RRM_Data_Driven_AP_Template.zip
+          if-no-files-found: error
