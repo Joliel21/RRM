@@ -29,5 +29,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/app/components/ReadingView.tsx
           git commit -m "Make AP scrollbars black"
+          git reset --hard HEAD
           git pull --rebase origin main
           git push origin main
