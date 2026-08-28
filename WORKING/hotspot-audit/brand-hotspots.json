@@ -1,0 +1,82 @@
+{
+  "destination": "https://rarerevolutionmagazine.com/",
+  "hotspots": [
+    {
+      "pageNumber": 92,
+      "label": "Open RARE Revolution Magazine website",
+      "href": "https://rarerevolutionmagazine.com/",
+      "x": 4.792,
+      "y": 3.891,
+      "width": 50.625,
+      "height": 1.762,
+      "sourceAsset": "series-cover/Explore_Series.png",
+      "detectedText": "RARE REVOLUTION MAGAZINE"
+    },
+    {
+      "pageNumber": 94,
+      "label": "Open RARE Revolution Magazine website",
+      "href": "https://rarerevolutionmagazine.com/",
+      "x": 7.708,
+      "y": 21.586,
+      "width": 50.208,
+      "height": 4.112,
+      "sourceAsset": "magazine-source/public/images/rare-pages/insider.png",
+      "detectedText": "RARE Revolution Magazine"
+    },
+    {
+      "pageNumber": 95,
+      "label": "Open RARE Revolution Magazine website",
+      "href": "https://rarerevolutionmagazine.com/",
+      "x": 18.854,
+      "y": 90.382,
+      "width": 48.229,
+      "height": 5.727,
+      "sourceAsset": "magazine-source/public/images/rare-pages/insider.png",
+      "detectedText": "RARE Revolution insider rarerevolutionmagazine.com/insider-splash/"
+    },
+    {
+      "pageNumber": 96,
+      "label": "Open RARE Revolution Magazine website",
+      "href": "https://rarerevolutionmagazine.com/",
+      "x": 10.104,
+      "y": 6.021,
+      "width": 36.875,
+      "height": 1.689,
+      "sourceAsset": "series-cover/insights.png",
+      "detectedText": "RARE REVOLUTION MAGAZINE"
+    },
+    {
+      "pageNumber": 198,
+      "label": "Open RARE Revolution Magazine website",
+      "href": "https://rarerevolutionmagazine.com/",
+      "x": 4.838,
+      "y": 25.299,
+      "width": 34.278,
+      "height": 2.484,
+      "sourceAsset": "series-cover/ads/rare_revolution_insider_membership_clickable.svg",
+      "detectedText": "RARE Revolution Magazine\u00ae"
+    },
+    {
+      "pageNumber": 200,
+      "label": "Open RARE Revolution Magazine website",
+      "href": "https://rarerevolutionmagazine.com/",
+      "x": 7.917,
+      "y": 8.297,
+      "width": 41.562,
+      "height": 2.129,
+      "sourceAsset": "series-cover/resources.png",
+      "detectedText": "RARE REVOLUTION MAGAZINE"
+    },
+    {
+      "pageNumber": 204,
+      "label": "Open RARE Revolution Magazine website",
+      "href": "https://rarerevolutionmagazine.com/",
+      "x": 8.575,
+      "y": 6.754,
+      "width": 48.802,
+      "height": 6.149,
+      "sourceAsset": "series-cover/References.png",
+      "detectedText": "RARE REVOLUTION MAGAZINE"
+    }
+  ]
+}
