@@ -30,7 +30,9 @@
       "name": "Charity & Advocacy",
       "printedPage": 100,
       "asset": "series/rare-insights/charity-and-advocacy.png",
-      "slug": "charity-and-advocacy"
+      "slug": "charity-and-advocacy",
+      "articlesFile": "series/rare-insights/charity-and-advocacy/articles.json",
+      "articlePageRenderer": "data-driven"
     },
     {
       "order": 4,
