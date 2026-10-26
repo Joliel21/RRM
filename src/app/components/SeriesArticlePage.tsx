@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  resolveRepositoryAssetUrl,
-  resolveRepositoryRootAssetUrl,
-} from "@/app/config/repository-assets";
+import { resolveRepositoryAssetUrl } from "@/app/config/repository-assets";
 
 type ArticleRecord = {
   id?: string;
@@ -37,7 +34,6 @@ type SeriesArticlePageProps = {
   ariaLabel?: string;
   variant?: "default" | "charity-advocacy";
   archiveUrl?: string;
-  imageAssetRoot?: "repository" | "repository-root";
 };
 
 const shortenTitle = (title: string, maxLength: number) => {
@@ -46,15 +42,10 @@ const shortenTitle = (title: string, maxLength: number) => {
   return `${shortened}...`;
 };
 
-const articleImageUrl = (
-  value?: string | null,
-  imageAssetRoot: "repository" | "repository-root" = "repository",
-) => {
+const articleImageUrl = (value?: string | null) => {
   const rawValue = String(value || "").trim();
   if (!rawValue) return "";
-  return imageAssetRoot === "repository-root"
-    ? resolveRepositoryRootAssetUrl(rawValue)
-    : resolveRepositoryAssetUrl(rawValue);
+  return resolveRepositoryAssetUrl(rawValue);
 };
 
 export const SeriesArticlePage = ({
@@ -63,7 +54,6 @@ export const SeriesArticlePage = ({
   ariaLabel,
   variant = "default",
   archiveUrl,
-  imageAssetRoot = "repository",
 }: SeriesArticlePageProps) => {
   const [payload, setPayload] = useState<SeriesArticlesPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -125,20 +115,20 @@ export const SeriesArticlePage = ({
     >
       {isCharityAdvocacy ? (
         <style>{`
-          .charity-advocacy-scroll {
-            scrollbar-width: thin;
-            scrollbar-color: #30b0be #e9f0f2;
+          .series-themed-page.series-article-page .charity-advocacy-scroll.charity-advocacy-scroll {
+            scrollbar-width: thin !important;
+            scrollbar-color: #30b0be #e9f0f2 !important;
           }
-          .charity-advocacy-scroll::-webkit-scrollbar {
-            width: 8px;
+          .series-themed-page.series-article-page .charity-advocacy-scroll.charity-advocacy-scroll::-webkit-scrollbar {
+            width: 8px !important;
           }
-          .charity-advocacy-scroll::-webkit-scrollbar-track {
-            background: #e9f0f2;
+          .series-themed-page.series-article-page .charity-advocacy-scroll.charity-advocacy-scroll::-webkit-scrollbar-track {
+            background: #e9f0f2 !important;
             border-radius: 999px;
           }
-          .charity-advocacy-scroll::-webkit-scrollbar-thumb {
-            background: #30b0be;
-            border: 2px solid #e9f0f2;
+          .series-themed-page.series-article-page .charity-advocacy-scroll.charity-advocacy-scroll::-webkit-scrollbar-thumb {
+            background: #30b0be !important;
+            border: 2px solid #e9f0f2 !important;
             border-radius: 999px;
           }
         `}</style>
@@ -183,7 +173,7 @@ export const SeriesArticlePage = ({
           <div className="grid grid-cols-2 gap-4 pb-8">
             {articles.map((item, index) => {
               const title = String(item.title || "");
-              const image = articleImageUrl(item.image, imageAssetRoot);
+              const image = articleImageUrl(item.image);
               return (
                 <a
                   key={item.id || item.url || `${seriesName}-${index}`}

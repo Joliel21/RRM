@@ -4019,7 +4019,6 @@ const CharityAdvocacyArchiveLayout = () => (
     ariaLabel="Scrollable Charity and Advocacy article archive"
     variant="charity-advocacy"
     archiveUrl="https://rarerevolutionmagazine.com/category/charity-advocacy/"
-    imageAssetRoot="repository-root"
   />
 );
 
