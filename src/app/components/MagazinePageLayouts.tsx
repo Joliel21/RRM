@@ -4014,7 +4014,7 @@ const CharityAdvocacyIntroLayout = () => (
 
 const CharityAdvocacyArchiveLayout = () => (
   <SeriesArticlePage
-    sourcePath="/series/rare-insights/charity-and-advocacy/articles.json"
+    sourcePath="https://raw.githubusercontent.com/Joliel21/RRM/main/magazine-source/public/series/rare-insights/charity-and-advocacy/articles.json"
     fallbackSeriesName="Charity & Advocacy"
     ariaLabel="Scrollable Charity and Advocacy article archive"
     variant="charity-advocacy"
